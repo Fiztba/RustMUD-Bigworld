@@ -404,8 +404,9 @@ AEDIT-MENU ACTION-EDITOR ACREATE SOCIAL-EDITOR
 Syntax: aedit <action>
 
    Aedit is an online action (social) editor that allows you to create socials 
-on the fly. Anyone can add new socials just ask a Great God or above to set your
-OLC to 999 and explain how it works. Use astat to see examples.
+on the fly. Anyone can add new socials just ask a Great God or above to grant
+you aedit ("set <name> olc aedit") and explain how it works. Use astat to see
+examples.
 
 Here is the much coveted list of $ codes applicable to socials:
 
@@ -616,6 +617,19 @@ as in "women's hemlines."
 
 We rest our case. Now do whatever you want...after all, it is your area.
 #31
+APPLICATION APPLY BUILDING LEARNING LESSONS 
+
+To apply for a building position go to:
+                   
+                   @Chttp://tbamud.com/@n 
+
+and fill out the application.
+
+@RGOTO 3@n to enter The Builder Academy.
+
+See also: OLC, REDIT, MEDIT, OEDIT, ZEDIT, SEDIT, TRIGEDIT, AEDIT
+
+#0
 AREAS 
 
 Usage: areas [level-range] 
@@ -803,12 +817,15 @@ AUTOLOOT
 
 Usage: toggle autoloot
 
-   Enables you to automatically "take all corpse" from any mob you kill.  You 
-will loot everything (including cursed objects) until you can no longer carry 
-anymore weight.  If this happens and and you also have autosac enabled, the 
-items you cannot pick up will be left on the ground.
+   Enables you to automatically "take all last.corpse" from any mob you kill.
+You will loot everything (including cursed objects) until you can no longer
+carry anymore weight.  If this happens and and you also have autosac enabled,
+the items you cannot pick up will be left on the ground.
 
-See Also: TOGGLE, TAKE, SPLIT
+   'last.corpse' rather than 'corpse' so that a room with several corpses in
+it is looted from the newest, which is the one you just made.
+
+See Also: TOGGLE, TAKE, SPLIT, LAST-PREFIX
 #0
 AUTOMAPPING MAPS
 
@@ -2463,6 +2480,21 @@ For a full history of MUDs, check out: http://en.wikipedia.org/wiki/Muds
 
 Smaug Building Institute: http://zeno.biyg.org/
 #0
+DISCLAIMER
+
+   All areas submitted or created on The Builder Academy remain the property
+of the original builder.  By creating or submitting an area the builder gives 
+the staff of TBA the right to edit, modify, and use the material as we see fit 
+on TBA without any penalty, fee, whining, or obligation of any sort.  TBA staff
+will not normally modify anyone's work. However, it is sometimes necessary for 
+troubleshooting, fixing errors, or game balance.
+   A builder can request a copy of their work from us at any time.  A builder's
+work will not leave TBA without their explicit permission.  The builder will 
+always be given public credit for their work. If a builder abandons their work 
+without notifying Rumble, they may be deleted and their work will either be 
+deleted or donated depending on the quality.
+
+#0
 DISCONNECT FLOOD OVERFLOW CUTOFF CUT-OFF ENTERING-TEXT
 
    This commonly happens to new builders when they try to enter too much text 
@@ -2649,10 +2681,23 @@ EMAILS ICQ AIM E-MAILS CONTACTS MSN AOL
 
 Name     Email
 
-Fizban     brandon.bridges.1216@*gmail.com
-
-Bugs, typos, ideas and zone submissions are welcome at that address.
-
+Welcor     welcor@*tbamud.com
+Rumble     rumble@*tbamud.com
+Opie       opie@*tbamud.com
+Wyld       wyld@*tbamud.com
+Vatiken    vatiken@*tbamud.com
+Shamra     shamra@*tbamud.com
+Fizban     fizban@*tbamud.com
+Amber      amber@*tbamud.com
+Detta      detta@*tbamud.com
+Elaseth    elaseth@*tbamud.com
+Elorien    elorien@*tbamud.com
+Ferret     ferret@*tbamud.com
+Fyre       fyre@*tbamud.com
+Heiach     heiach@*tbamud.com
+Random     random@*tbamud.com
+Relsqui    relsqui@*tbamud.com
+Rhade      rhade@*tbamud.com
 #0
 EMOTES : EMOTIONS
 
@@ -2855,6 +2900,39 @@ May give you some valuable information about an item or monster.
 
 See also: LOOK
 #0
+EXAMPLE-PROPOSAL PROGRESS-REPORT REPORT-EXAMPLE EXAMPLE-REPORT 
+
+As a builder on a mud it is important that you are accountable to someone.
+To prepare you for this, and to keep the Builder Academy professional, I 
+request (not mandatory) a report from every builder so I can keep track of 
+everyone's progress and give help to those who are serious about learning to
+build. These monthly reports are due the 1st of each month. The report will 
+include at a minimum the info in the example below. A simple mudmail to
+Rumble with this info is sufficient. Here is an example:
+
+Rumble's Building Report.
+Builder      : Rumble
+Zone         : 13 The Builder Academy
+Began        : When you started working on the zone.
+Player Level : 30
+Rooms        : 145 complete
+Mobs         : 23
+Objects      : 42
+Triggers     : 129 
+Theme        : Its purpose, hack & slash, quest, rescue princess, kill ogre...
+Completion   : When do you expect to finish it, how is the progress going?
+Notes        : Such things as zone alignment, economy, quests, special mobs and
+       objs, and anything else I should know about your zone. What 
+       makes it unique?
+
+To submit a report type @RAT POSTMASTER MAIL RUMBLE@n. Do not worry about 
+making it look pretty. This is only necessary after you have completed your 
+trialroom and if you have your own zone. This proposal is also a good example
+of the Zone Description Room required for all zones. By writing the report you
+can include the same information in the zone description room.
+
+See also: REPORT-EXAMPLE, ZONE-DESC
+#0
 EXITS
 
 Usage: exits
@@ -2869,13 +2947,27 @@ EXPORT
    Used by the IMP's to export a zone for other MUD's. This command replaces
 the zone number with QQ's. This allows any decent text-editor to "find and
 replace" the QQ's with a zone number of your choice. The zone will be saved
-into a compressed file as: <zone #>_<zone name>.tgz i.e. 1_Sanctus.tgz
+into a compressed file as: <zone #>_<zone name>.tar.gz i.e. 1_Sanctus.tar.gz
+(or .zip if the export asked for one).
    Use your preferred client to unpack and then a text editor to find and
 replace the QQ's with your zone number. If you want to keep the existing zone
 number make sure to say so when you ask for an export. The easiest way to add
 a new zone is to first create the new zone and then overwrite the created 
 files. A zone consist of up to 6 different files that are located in their own
 directories in lib/world/: <zone_#>.mob .obj .shp .trg .qst .wld .zon
+
+   Syntax: export <zone vnum> [<target zone>] [zip]
+
+   export 577           QQ scheme, files named qq.*, archive 577_Name.tar.gz
+   export 577 400       renumbered into 400, files 400.*, 400_Name.tar.gz
+   export 577 zip       QQ scheme, archive 577_Name.zip
+   export 577 400 zip   renumbered into 400, archive 400_Name.zip
+
+   With a target zone the vnums and the file names are already the ones the
+zone will use, so there is no find-and-replace to do and nothing to rename --
+only the index files to add them to. References that leave the zone are
+marked ZZ in either form and have to be pointed at something real before the
+zone will load.
 
 #31
 EXPRESSIONS TRIG-EXPRESSIONS TRIGEDIT-EXPRESSIONS INCREMENTS MATHEMATICAL NUMBERS TRIGEDIT-NUMBERS != <> LOGIC && /= || \ RNUMBERS + OPERATORS OPERATIONS == EQUAL ADDITION SUBTRACTION
@@ -3155,6 +3247,21 @@ This spell is the most powerful spell a magic user can cast.
 
 See also: COLOR-SPRAY
 #0
+FIZBAN
+
+Unlike Rumble, Fizban actually doesn't want your help. He is already well
+on his way to world domination. Sometimes he pretends to lack powers he
+mastered long ago so to seem feeble, but in actuality he is one of the
+most powerful beings in existence and seeks to destroy the world. He only
+pretends to be the Avatar of Paladine because then no one suspects him.
+The Avatar of Fizban that is here on The Builder Academy is one of his
+feeble essences, where he pretends to not be overly competent and actually
+humble and helpful, but whatever you do...don't be fooled! It should be obvious
+from the fact he's built 4 rooms in that many years that he is spending most
+of his time elsewhere...on much darker motives than building happy zones
+for tbaMUD players.
+
+#0
 FLAGS
 
 Players sometimes have FLAGS after their names in the WHO list.  These
@@ -3362,8 +3469,13 @@ Examples:
   > get all all.bag
   > take all.bread all.bag
   > get all 2.corpse (to retrieve items from the second corpse in a room)
+  > get all last.corpse (the corpse that arrived most recently)
 
-See also: DROP, PUT, AUTOLOOT, AUTOGOLD
+A plain 'corpse' finds the oldest one in the room, so with several on the
+floor 'last.corpse' is usually the one you want.  See LAST-PREFIX for the
+numbered and 'last.' forms in full.
+
+See also: DROP, PUT, AUTOLOOT, AUTOGOLD, LAST-PREFIX
 #0
 GITHUB SVN SUBVERSION
 
@@ -3691,7 +3803,8 @@ HEDIT HELP-EDITOR
 
 Usage: hedit <keyword>
 
-This command allows online editing of help files. Hedit OLC permission is 888.
+This command allows online editing of help files. Access is granted with
+"set <name> olc hedit".
 When editing a help file entry the first line must list all keywords. Do not
 use /fi in hedit. Also, when editing an existing entry make sure to modify the
 first keyword or it will not be saved.
@@ -3799,6 +3912,19 @@ see what mortals see for debugging purposes.
 
 See Also: TOGGLE
 #31
+HOMEPAGES WEBPAGES WEBSITES ADDRESSES PORT PORTS URLS ADDYS IP-ADDRESSES SITES INTERNET-PROTOCOLS WEBLINKS MUDS ACCOUNTS CONNECTIONS CONNECTING HOSTS WWW PLAYERPORT PLAYER-PORT
+
+Builder Academy Homepage:
+   @C http://www.tbamud.com@n
+
+The address (or IP and port) to TBA:
+TBA         : tbamud.com 9091 IP: 206.41.252.202
+Player Port : tbamud.com 4000 IP: 206.41.252.202
+
+Internet protocol (IP) is what identifies each computer individually on the internet.  The
+Gods can see your IP and report abuse to your provider so behave. 
+ 
+#0
 HOMETOWNS
 
    Some large MUDs have hometowns to choose from. tbaMUD only has a single mortal
@@ -3858,7 +3984,7 @@ HSEDIT-MENU
 
 -- House OLC Editor for tbaMUD --
 -- House number : [1300]     House zone: [13]
-1) Owner       : 65535 -- <Nobody!>
+1) Owner       : -1 -- <Nobody!>
 2) Atrium      : <Not Set!>
 3) Direction   : north
 4) House Type  : PLAYER_OWNED
@@ -3866,7 +3992,7 @@ HSEDIT-MENU
 6) Payment     : None
 7) Guests      : <None!>
 8) Flags       : NOBITS 
-9) Receptionist: [65535] <Not Set!>
+9) Receptionist: [-1] <Not Set!>
 X) Delete this house
 Q) Quit
 Enter choice : 
@@ -4226,6 +4352,15 @@ Things dropped or left in a room go on the end of that room's list, so
 which is why autoloot, autogold and autosac use it.  Your inventory and the
 people in a room are built the other way round, newest first, so 'last.'
 picks the oldest of those.  Either way it is the far end of the list.
+
+What you are wearing is not a list in that sense.  'last.' there means the
+last worn position, counting down the way your equipment is listed.
+
+'last.' reaches the things you can see: what you carry, what you wear, and
+what is in the room with you.  A search that widens to the whole world -- a
+'locate object', or an immortal hunting something that is nowhere nearby --
+does not take it, because nothing out there sits in an order you could have
+pointed at.  Use a number there instead.
 
 '0.<name>' is a third form: it means the player of that name, rather than a
 mobile that happens to answer to it as well.
@@ -6367,8 +6502,17 @@ LVL_BUILDER, or LVL_GOD.  A few commands are restricted to the implementor.
 
 A player can always edit a zone and its contents if their name is in the
 zone builders list (see ZEDIT for more information).  Finally, a player
-may be granted OLC rights to a specific zone by means of the "set" command,
-using "set <player> olc <zone>".
+may be granted OLC rights by means of the "set" command:
+
+   set <player> olc <zone>     the zone the player may edit
+   set <player> olc aedit      the social editor (see AEDIT)
+   set <player> olc hedit      the help editor (see HEDIT)
+   set <player> olc all        every zone and every editor
+   set <player> olc off        no OLC rights at all
+
+The forms combine, so "set <player> olc 30 hedit" gives zone 30 and the
+help editor together.  Each grant adds to what the player already has;
+"off" is the way to take rights away.
 
 The implementor has unfettered access to all Oasis commands.
 #31
@@ -6690,6 +6834,244 @@ each.
 
 See also: SPELLS, SKILLS, LEVELS
 #0
+PRAISE REVIEWS RATINGS
+
+Review Submitted By: Detta 
+Author Status: Player and staff member 
+Started on The Builder Academy: June 2003 
+Submission Date: Sep 17, 2003 
+
+Initially I came to TBA knowing absolutely nothing about any sort of 
+building, having wanted to learn but being worried about expectations,
+difficulty etc. However, I eventually put in an application and found 
+it an extremely supportive atmosphere. There are extensive help files 
+on almost everything, there are no deadlines or pressures, and regular
+staff members to help with any problems.
+
+Was given the trial of building one basic room/object/mob first, and 
+was then able to work on my own zone in my own time, and learn some 
+of the more challenging aspects of building.
+
+Thoroughly enjoyed and enjoying the whole experience and am now 
+helping out as staff there myself. Regardless of how little or how 
+much you know about building, if you'd like to give it a go, or are 
+just curious as to what it entails then I wholeheartedly recommend 
+coming by :).
+
+Review Submitted By: Heiach 
+Author Status: Staff member 
+Started on The Builder Academy: 2003 
+Submission Date: Jan 10, 2004 
+TMC Listing: The Builder Academy 
+
+I entered TBA with the hope of becoming a teacher. I've been building
+for quite some time and my first impression was that of a pleasant 
+MUD with a very helpful staff. I filled out an application form and 
+was soon on my way. There is wonderful builder tutorial there, and 
+despite the fact I thought I knew most of it, I read it all anyway 
+and learnt much.
+
+I was then issued with a trial vnum, that is 1 room, 1 object and 1 
+mobile. And I described them to the best of my abilities. After some 
+friendly suggestions my vnum was passed and I was set up with my very
+own zone.
+
+The whole reason I came was to help teach Trigedit, but I ended 
+up learning many, many things that I had no idea were even possible.
+I am currently working there as a staff member and would definitely 
+recommend coming here whether you're an experienced builder and want 
+to refine your skills or if you're absolutely new to building and 
+have not a clue at all. Be assured, you'll be welcomed with open arms 
+and treated politely.
+
+Maren
+   I'm so glad that you've been such a great resource. The lessons I learned at 
+your BA have helped me develop areas for the MUD that I have played for 4 years. 
+I can't thank you enough for what you've done. 
+
+Message 6 : Tue Mar  4 (Chubs)      :: Rumble and Friends
+   Id like to say your help file on triggers has been an immense help, and that
+the mud altogether has helped, I direct learners to go here if they want to
+learn, thanks for working so hard Rumble, Relsqui, and community!  ^.  ^
+
+Znith
+I feel like this is my training ground. Good work you guys do...I, and the rest 
+of the mudding world, should and do appreciate it.
+
+Date: Wed Jan 14 18:06:54 2004
+  To: rumble
+From: Santa
+
+Hey wassup man,
+just thought I'd drop by and say hi!
+
+Actually, I came to thank you for all your help
+when I started doing this err zone making, the
+creative writing process I realized has really helped
+me out a lot, and is a skill that not many possess.
+
+right now, my friends and I started a new enterprise
+called meal deal.
+
+so we're doing a lot of work for restaurants and stuff, 
+and I've began to do restaurant reviews and pretty much
+all the copywriting on the entire website and on the sales
+kits and blah blah blah. it is a hell of a lot of writing.
+so er yeah, keep up the good work. and I just wanna say
+thanks.
+
+Santa
+
+Builder Academy by Robert 
+This is a very helpful academy where even the computer illiterate can learn to 
+build (like me. It has a group of rooms that teach you all you need to know as 
+long as you have patience to read them. There are people on it that help you 
+when you need information or tips. 
+
+Review Submitted By: Elaseth 
+Author Status: Staff member 
+Started on The Builder Academy: Oct 1999 
+Submission Date: Feb 8, 2004 
+TMC Listing: The Builder Academy 
+
+I've been on TBA off and on from the time before Cruel World actually 
+had players and TBA was just a building port to the time Cruel World 
+shut down for good and TBA was all that was left.
+
+When I originally went to TBA, I had just resigned from an admin
+position on a MUD and was floating about. I saw an advertisement for
+TBA and thought I'd see if there was anything to learn - and learn I 
+did. It did not take long before I was helping others, and soon after 
+that I meandered my way up the ranks to be one of their staff.
+
+From a staff perspective, we always attempt to answer all questions 
+and feel a commitment to improving the mud community - that of other 
+MUDs, not our own. Rumble, who runs TBA's social side, has a strong 
+sense of community and a desire to see others succeed. The rest of 
+us have bought into his flowers-and-sunshine ideals and are trying 
+to do our part... or haven't and are just using Rumble's resources 
+for our own vision and enlightenment. In either case, all comers are 
+treated with respect by the staff.
+
+The intention of TBA is simple - it is all about serving builders. We 
+cater to:
+
+   -- those learning to build
+   -- those simply enacting a vision for a zone
+   -- those building for another mud
+   -- learning to script with DG-scripts
+   -- discussing building tips and techniques
+   -- trying out pet theories 
+   -- those seeking to expose themselves to the theories of others
+
+
+There are no deadlines to work to but your own (though we do 
+occasionally overwrite or erase older work for the sake of making 
+space for newer work). It is my opinion that the staff is mature, 
+service-oriented, and non-judgemental about building abilities.
+
+If you wish to participate in any of the above, I believe we uniquely 
+suit your needs. The only drawback is that while many building 
+techniques are universal, we specifically teach the use of tbaMUD 
+3.1 with DG-Scripts 1.0.12 and OasisOLC 2.0.6.
+
+Happy Building!
+-Elaseth
+
+Review Submitted By: Elorien/Elora2404 
+Author Status: Player 
+Started on The Builder Academy: Some weeks ago 
+Submission Date: Feb 15, 2004 
+TMC Listing: The Builder Academy 
+
+There are a few places out there that are first and foremost
+dedicated to helping out the MUD community. This is one of the
+finest examples of such a place.
+
+When I first entered the TBA, I was greeted by enthusiastic players
+and staff members, who took the time to help me get started, and
+showed me all the patience in the world while I finished the
+application process.
+
+The standard on TBA is generally very high, and it keeps getting
+higher. There is a common consensus among both players and staff
+that everyone, including those most experienced and/or most 
+talented, has something to learn. Advice and honest opinions are 
+given when requested, but at the same time every builder has the  
+freedom to both experiment with unconventional building techniques, 
+as well as a chance to learn or get better with traditional
+tbaMUD tools. 
+
+This is a place for builders who love to build, and the building 
+happens in the friendliest atmosphere you could possibly imagine. I
+have yet to meet any single person who wasn't open, kind and ready
+to help with whatever you might need. And these people really know
+what they're doing.
+
+Before I started at TBA, I was completely drained of creative energy.
+After a longer, rather trying Imm-ship, I felt unappreciated,
+unmotivated and with the exception of a little private doodling in
+Word, I had stopped building altogether. It took no more than a few 
+days on TBA to make my mind start dreaming up new plots and
+schemes, planning a huge library meant to be a place that can help
+roleplayers evolve their clerics and mages at a scholarly level. I'm
+thoroughly enjoying every moment in there because, more than
+anything else, TBA remembers that building (and mudding in general)
+before anything else, is supposed to be fun. 
+
+Thank you for letting me work here at TBA, I've learned a lot of things, I'll 
+never forget u guys, for sure. I still have much left to learn, but, in the time
+I was here, you guys helped me a lot. Thank you!!!
+LAGUNA
+
+   Aight, from past experience with MUDs, and seeing how and what others have
+built on those MUDs that I have played, I have always wanted to learn how to
+build myself and along with that, it is of good experience to have under my belt
+for becoming a game designer. My feedback so for, up till this point, is all
+positives. This is a great place for newbies like myself in the building world
+to come, and even for those that are somewhat trained in the world of building.
+The help files that you supply are great, and are detailed/descriptive in every
+aspect The "higher" immortals/gods like yourself have been a great help also,
+pointing out what I need to fix, which helps me out a lot, there is usually
+always something for a person to improve upon, so any feedback/help for
+correcting my mistakes is always a plus. I like how you set it up for the
+beginner like myself to learn how to edit a vnum before we go about building an
+entire zone get the feel of things before you start, and also have a person such
+as yourself point out the errors, so that I can become better at building in all
+honesty I probably would not have understood as much as I do now in such a little
+time if it wasn't for the staff, the help files, and my passion for building and
+you allowing me to do so you are all doing a good job. Keep it up.
+CRISCAL
+
+I think it was a brilliant idea to help get MUDs who need builders.... what they
+need when I came into this mud via friend telling me the site I had absolutely 
+no knowledge of how to make rooms/objects/mobs. Now I know a lot more about all 
+three of those than I did before. I want to thank all of you guys for what you 
+are doing :)
+
+Pepper!
+
+ * * * * tbaMUD Mail System * * * *
+Date: Sun Sep 23 04:41:06 2007
+To  : rumble
+From: raven
+
+I've wanted to thank you for running all this. Everything at TBA has been very
+helpful to myself and the other builders I've been working with. Your service 
+is much appreciated. So, again, thanks for keeping all of this running. I am 
+sure everyone else appreciates it as well. Regards
+--Raven
+
+Sylaer gossips, 'Just stopping in to see what's here and say that I appreciate a mud theme such as this'
+
+Sryth:
+Trigedit is still being actively developed at The Builder Academy (TBAmud), 
+their website has pretty good documentation on the feature, and they have a 
+full mud set up that does nothing but develop the code and teach people to 
+use the OLC and scripting with excellent tutorials. The people are friendly, 
+helpful, and knowledgeable.
+
+#0
 PREFEDIT PREFERENCE-EDITOR
 
 Usage: prefedit
@@ -6699,6 +7081,27 @@ to change all of their preferences and toggles.
 
 See Also: TOGGLE
 #0
+PREREQUISITES CONSTRUCTIVE-CRITICISM
+
+   Do you own a dictionary? Can you write in complete sentences? Builders
+are expected to be able to write decent descriptions. Good MUDs will not use
+zones that are grammatical nightmares. The goal of the Builder Academy is to
+develop great builders, part of this requires a grasp on the English language.
+We understand English is not the first language for most people, but that is no
+excuse if you wish to be a builder. Most MUDs are not going to spend the time
+to teach you proper English. At the Builder Academy we will try.  But, it
+will take more effort on your part than ours.    
+   Once you start your zone we will review it and make suggestions to redo or
+fix parts.  This is perfectly normal and should not in any way be interpreted
+as an insult.  The comments you receive may include a lot of nit-picky details
+but once you are an experienced builder and have gained our trust and respect
+we will not be going over your work as closely.  Try and learn as much as you 
+can from this test and review process. Keep it in mind as you work on future
+projects. It is the most direct and concrete way for us to teach you how to 
+build.  Everyone wants builders, but they want quality work more.  We would 
+rather have one good zone than ten mediocre ones.
+
+#31
 PRF CHAR-FLAGS PC-FLAGS NO_TELL PLAYER-FLAGS 
 
 BRIEF      - Player has enabled brief mode.
@@ -6737,6 +7140,31 @@ AUTOASSIST - Player has Autoassist enabled.
 
 See also: FLAGS, PLR
 #31
+PROMOTE PROMOTIONS ADVANCEMENTS RAISES LVLS LEVELS GAINS 31 32 33 34 RANKS RANKING HIRING JOBS STAFFING
+
+Here at The Builder Academy, the level of an immortal generally reflects that
+immortal's building skill and willingness to help others.  If you have
+questions, you may want to ask someone whose level is at least 32.  Of course,
+everyone is encouraged to help everyone else, but know that those who are not
+at least level 32 may have relatively little experience.
+
+Level 31 (Immortal)    Anyone who is new to TBA and is working on their trial
+                       vnum or zone.
+Level 32 (God)         An experienced builder with proven knowledge that is
+                       willing to teach others. Immortals of level 32 and above
+                       are considered staff.
+Level 33 (Greater God) An experienced builder that has contributed significantly
+                       to TBA.
+Level 34 (Implementor) Current developers: Welcor, Wyld, and Opie.
+
+Please do not bother asking to be advanced.  If your goal is merely to rise in
+the ranks, you are wasting your time.  The Gods here are dedicated to helping
+others learn to build.  Thus, those who advance in level are those who become
+proficient builders that offer their time to teach others.  If you are willing
+to give back to the tbaMUD community and have the requisite skills, you will be
+advanced and given further tools to teach others via your level.  Generally, if
+you ask for a promotion, you will be less likely to receive it.
+#0
 PROPOSALS GUIDELINES ZONE-PROPOSALS PROPOSITIONS PROPOSE REQUESTS CRITERIA
 
 Congratulations, you must have completed your first trial of building one
@@ -7708,6 +8136,15 @@ ROOM-TRIGGERS TRIGEDIT-ROOM-TYPES
 17) Leave        @RHELP TRIGEDIT-ROOM-LEAVE@n       
 18) Door         @RHELP TRIGEDIT-ROOM-DOOR@n       
 #31
+RUMBLE
+ 
+   Thanks, I need all the help I can get.
+ 
+Rumble created The Builder Academy back in 2000 and appreciates any assistance
+in improving the tbaMUD codebase for the community to enjoy: tbamud.com 9091
+ 
+See Also: TBA-ADVERTISING, TBA-STAFF
+#0
 RUMBLE-ALIASES
  
    Some examples of aliases I use:
@@ -8686,6 +9123,46 @@ ways; you keep your share and give everyone else their share).
 
 See also: AUTOSPLIT, FOLLOW, GROUP
 #0
+STAFF DUTY DUTIES STAFF-DUTIES TBA-STAFF-DUTIES TBASTAFF
+
+   This is how we handle new arrivals on TBA. Read the helpfiles on send/snoop.
+
+1.  Have them fill out the application at: @Chttp://tbamud.com/@n
+    They must submit the application before being advanced. 
+2.  Advance them to Immortal.  <advance Rumble 31>
+3.  Transfer or teleport them to 3, Socrates will greet them with instructions. 
+4.  Tell them to read through the entire zone and follow its instructions. 
+    Remind them that if they get confused they can ask for help over wiznet.
+5.  The entire zone should take well over an hour to read. A trigger will tell 
+    them at the end of the redit hallway that they can begin working on their
+    trial vnum.  Great God's and Implementors will assign trial vnums and zones. 
+6.  Be available for questions, but don't hand feed them everything. If you do
+    you will get burnt out or become suicidal. Help <X>edit, shows the room 
+    number for each hallway. I have compiled an extensive help system so the
+    majority of the questions can be answered by directing them to a help file.
+7.  Once they complete their one room/mob/obj look it over. Check everything. 
+    Anything you miss will be repeated up to 100 more times with their new zone. 
+    Any corrections now will save us (and them) major headaches later! 
+    STAT ROOM/MOB/OBJ to be sure everything is correct. 
+8.  After the trial vnum is approved tell them to read HELP PROPOSAL. A zone 
+    proposal is required before they will be given a zone.  
+9.  Finally, make sure to have fun. If you don't want to deal with newbie's go
+    invis. Everybody gets tired of training eventually. I know it gets hectic
+    at times, just do your best, keep your cool, and remember to breathe ;-)
+
+Feel free to submit contact info to rumble for the HELP EMAIL entry.
+
+Great God's:
+    Use any free trial vnum in the zone listed in imotd. Set their trial vnum 
+    in their title "set rumble title has trial vnum #" "set rumble olc #." Put
+    their name in their trial vnum room title. Use the assigner to limit them
+    to their single vnum. HELP ASSIGNER. In the rare occasion that I am absent 
+    @HHELP STAFF-ZONES explains how I setup new zones.
+
+Rumble
+
+See Also: TBA-ADMIN
+#31
 STAFF-ZONES
  
    Ensure their trial vnum is complete and they have submitted a zone proposal. 
@@ -8730,6 +9207,20 @@ redit [%1]00
 "show zone none" to see free zones
 
 See also: STAFF, ASSIGNER
+#0
+STARTS NEWBIES NEWBIE-POLICY ALL TUTORIALS TBA-ZONE SCHOOL 
+
+   Your first task is to apply for builder status at: 
+
+            @Chttp://tbamud.com/@n
+
+   When you finish and submit the application tell anyone God or higher
+and they will advance you to begin your training.
+
+   Once promoted @RGOTO 3@n and read through the Builder Academy's tutorial 
+zone. Your third task as a builder is explained under @RHELP TRIAL@n. 
+
+See also: BACKGROUND
 #0
 STAT STAT-SELF
 
@@ -9409,6 +9900,152 @@ tbamud.com 9091
 
 See also: NEWBIE
 #0
+TBA-ADMIN
+
+Help and World files are the "master" versions. Before a release I copy the help file and World files to /tbamud
+Only difference from stock is do_cheat, help files viewable by any level, do_advance is LVL_GOD, and 600+ zones.
+tbamud.com is the latest Joomla version with Kunena as our forums. Download section is Google Drive.
+Builder Applications can be viewed here: goo.gl/0FBsys
+Backups are done monthly of /tba and using the Akeeba component in Joomla, I keep an archive. Github is our version control system but I like backups of backups. Please do reasonable backups of your own.
+
+To setup a trial vnum (in this case test for 61165:
+advance test 31
+set test nohassle off
+set test olc 611
+set test title has trial vnum 61165
+set test loadroom 3
+set test gold 1000000
+restore test
+redit 61165
+1
+test's Trial Vnum
+q
+y
+toggle nohassle off
+load obj 1332
+set self level 32
+tbalim test 61165
+return
+toggle nohassle on
+
+To list empty zones "show zone none"
+To setup test with zone 348
+return
+saveall
+set test olc 348
+set file test olc 348
+set test title has zone 348
+set file test title has zone 348
+set test loadroom 348
+set file test loadroom 348
+set test gold 1000000
+wiznet Okay test, you have zone 348 vnum's 34800 to 34899. Help buildwalk and help dig to learn how to create and link your rooms. If you have any questions just ask.
+toggle nohassle off
+load obj 1332
+set self level 32
+tbalim test purge
+return
+restore test
+toggle nohassle on
+redit 34800
+1
+test's Zone Description Room
+q
+y
+zedit 34800
+1
+test
+z
+Name Me - test
+q
+y
+redit 34800
+2
+return
+saveall
+set test olc 348
+set test title has zone 348
+set test loadroom 348
+set test gold 1000000
+wiznet Okay test, you have zone 348 vnum's 34800 to 34899. Help buildwalk and help dig to learn how 
+to create and link your rooms. If you have any questions just ask.
+toggle nohassle off
+load obj 1332
+set self level 32
+tbalim test purge
+return
+restore test
+toggle nohassle on
+redit 34800
+1
+test's Zone Description Room
+q
+y
+zedit 34800
+1
+test
+z
+Name Me - test
+q
+y
+redit 34800
+2
+<paste zone proposal here>
+q
+y
+See Also: TBA-STAFF, TBA-ZONES
+#32
+TBA-ADVERTISING
+
+Mud Created: 2000 
+The Builder Academy 
+Code Base: [tbaMUD] the latest version 
+Site: tbamud.com 9091 [206.41.252.202] 
+Admin Email: rumble@*tbamud.com 
+Theme: Teaching Builders and tbaMUD Codebase Development
+http://www.tbamud.com/ 
+telnet://tbamud.com:9091 
+
+The Builder Acamady (TBA) was created in October of 2000 on the MUD Cruel World. It began 
+with a combination of my own MUDding experience and the work of numerous others from the 
+MUDding community into an extensive tutorial zone, help files, and examples
+
+
+TBA now has two main missions. It originally was meant to be a training MUD open to anyone 
+willing to learn or teach how to create your own text-based World. 1,000's of builder's 
+have gone through our training and many MUDs require new builders to complete training at 
+TBA before they can apply to their MUD. TBA's other mission is the development of the 
+codebase formerly known as CircleMUD. Due to CircleMUD's stagnation TBA staff decided to 
+release our codebase under the name tbaMUD and we have been updating it tirelessly for 
+over 10 years.
+
+TBA is a low stress, no deadline, training environment where anyone with motivation can 
+work at their own pace to learn as much or as little as they wish. Numerous people are 
+available to answer questions and give advice.
+
+1000's of builders served and counting.
+
+The most challenging aspect of running a MUD is finding good builders. You will hear this 
+from the admin of every MUD that has ever been. In the past it has always been up to each 
+individual MUD to find and usually train their own builders. This works, but I think the 
+MUDing community can come up with something better. That is why we created The Builder's 
+Academy. No pressure, no deadline, just come and learn or help teach. Give something back 
+to the community we have all taken so much from. TBA is a MUDing community resource, 
+please submit any lessons learned or building tips and tricks so we can improve our 
+codebase and training.
+
+TBA can also be used by other MUDs as a builder's port. Just send us your newbie builders. 
+We will teach them and then you can have them back with the zones they built.
+
+We are always open to anyone willing to learn or help teach so we can continue to improve 
+the tbaMUD codebase.
+
+- Rumble
+The Builder Academy
+tbamud.com 9091
+http://tbamud.com
+rumble@*tbamud.com
+#0
 TBAMAPS TBA-MAPS
 
         |                                      |
@@ -9503,13 +10140,14 @@ Editor command formats: /<letter>
 @n/c         -  clears the buffer.
 @n/d#        -  deletes line #, or a range #-#.
 @n/e# <text> -  changes the line at # with <text>.
-@n/f         -  formats text. 
+@n/f         -  formats text, or a range #-#.
 @n/fi        -  indented formatting of text (highly recommended for all desc's).
-                paragraphs can be formatted by /f 1-4 (first from lines 1-4, 
-                and /f 5-9 (second from lines 5-9).
+                A line number or range narrows /d, /f, /fi, /l and /n to
+                those lines, so two paragraphs can be kept apart by running
+                /fi 1-4 on the first and /fi 5-9 on the second.
 @n/h         -  list text editor commands.
 @n/i# <text> -  inserts <text> before line #.
-@n/l         -  lists buffer.
+@n/l         -  lists buffer, or a range #-#.
 @n/n         -  lists buffer with line numbers, or a range #-#.
 @n/r 'a' 'b' -  replace 1st occurence of text <a> in buffer with text.
 @n/ra 'a' 'b'-  replace all occurences of text <a> within buffer with text.
@@ -9569,6 +10207,39 @@ MOB: 1322
              ^^^//\\_^^//\\_^       ^(\_\_\_\)
                ^^^ ^^ ^^^ ^^
 #31
+THE-MUD-CONNECTOR TMC MUD-CONNECTOR MUDCONNECTOR
+
+   Most of our traffic comes through word of mouth or TMC reviews. If you are so
+inclined please leave a review about your experience with TBA at:
+http://mudconnector.com/mud-bin/adv_search.cgi?Mode=MUD&mud=The+Builder+Academy
+
+   The most challenging aspect of running a mud is finding good 
+builders. You will hear this from the admin of every MUD that has ever
+been. In the past it has always been up to each individual MUD to find
+and usually train their own builders. This works, but I think the 
+MUDding community can come up with something better. That is why I 
+created The Builder Academy.
+
+   We have been open to anyone interested in learning or teaching how
+to build using Oasis OLC with dg scripts since 2000. TBA has expanded
+to also be used to develop stock zones for CircleMUD.
+
+   TBA has trained 1000's of builders and has an extensive tutorial 
+and help file system. No pressure, no deadline, just come learn, 
+teach, or help develop CircleMUD. Give back to the community we have
+all taken so much from. TBA is a MUDding resource. Take advantage of
+it so we can improve the entire MUDding community. 
+
+   TBA can also be used by other MUDs as a builder's port. Just send 
+us your newbie builders. We will teach them and then you can have 
+them back with the zones they built.
+
+   We are always open to anyone willing to learn, teach, or help 
+develop our newly released tbaMUD codebase (the codebase formerly 
+known as CircleMUD).
+
+See also: REVIEWS
+#0
 THEMES
 
    The theme for an area is its reason to be.  A theme can be simple. Like, a
@@ -9781,6 +10452,42 @@ always have your trial vnum or your zone somewhere in it.
 
 The best examples: 13593, 13700
 #0
+TRIAL-VNUM-ASSIGNER ASSIGNER TRIAL-VNUM-LIMITER TBALIM JUNK-ASSIGNER LIMITER VNUM-ASSIGNER TASKS
+
+   This object was created to help new builders follow the directions under 
+HELP TRIAL. It will limit them to a single vnum so they can not edit other 
+trial vnums in their zone. The assigner is loaded to every player in the 
+mortal greet room. 
+
+This is what I do to setup a new builder:
+In MUDlet I use an alias "atv # <name>" (matches2 = vnum, matches3 = name)
+
+send("advance " .. matches[3] .. " 31")
+send("set " .. matches[3] .. " nohassle off")
+send("set " .. matches[3] .. " olc 611")
+send("set file " .. matches[3] .. " olc 611")
+send("set " .. matches[3] .. " title has trial vnum " .. matches[2])
+send("set file " .. matches[3] .. " title has trial vnum " .. matches[2])
+send("set " .. matches[3] .. " loadroom 3")
+send("set file " .. matches[3] .. " loadroom 3")
+send("set " .. matches[3] .. " gold 1000000")
+send("restore " .. matches[3])
+send("redit " .. matches[2])
+send("1")
+send(matches[3] .. "'s Trial Vnum")
+send("q")
+send("y")
+send("toggle nohassle off")
+send("load obj 1332")
+send("set self level 32")
+send("tbalim " .. matches[3] .. " " .. matches[2])
+send("return")
+send("toggle nohassle on")
+
+@RTSTAT 1306, 1365, 1366@n
+
+See Also: TRIAL
+#31
 TRIG-AFFECTS TRIGEDIT-AFFECTS %ACTOR.AFFECT%
 
 Trig Usage: %actor.affect(<affect>)%
@@ -10302,58 +11009,6 @@ Variables:
 %self%  - the mobile.
 
 Example: @RTSTAT 153, 1371, 62, 2721, 167@n
-#31
-TRIGEDIT-MOB-DAMAGE TRIG-MOB-DAMAGE MOB-DAMAGE DAMAGE-TRIGGER MDAMAGE-TRIGGER
- 
-Activated when the mobile takes damage, before that damage is applied.
-A charmed mobile never fires this trigger. If the mobile has more than
-one Damage trigger, only the first one to fire is run.
- 
-Numeric Arg : percent chance the trigger fires, rolled on every damage
-              event. Note this differs from HitPrcnt, where the number
-              is a percentage of the mobile's maximum hit points that
-              it must have fallen to, rather than a chance.
-Argument    : not used.
- 
-Variables:
-%actor%      - the character dealing the damage.
-%self%       - the mobile taking it.
-%victim%     - the mobile taking it, the same as %self%.
-%damdealt%   - the damage about to be applied.
-%attacktype% - the skill or spell being used. UNDEFINED for an ordinary
-               weapon hit, which has no skill behind it.
- 
-The value this trigger returns IS the damage the mobile takes:
- 
-  return -1   nothing lands, and no fight starts.
-  return 0    the blow misses, but the fight still begins.
-  return >0   the mobile takes that much instead. Sanctuary and the
-              damage cap still apply to it afterwards, exactly as they
-              would have to the original amount.
-  no return   the damage is applied unchanged.
- 
-Example, reflecting a blow back at whoever struck it:
- 
-  mdamage %actor% %damdealt%
- 
-%damage% is the command alias for mdamage, so that line can equally be
-written @R%damage% %actor% %damdealt%@n. mdamage does not go through the
-combat code: it starts no fight, fires no trigger on the character it
-hits, ignores sanctuary, and cannot harm an immortal. If it kills a
-player, the death is logged as a script kill.
- 
-Example, a mobile that reacts once it has taken 50 damage in total:
- 
-  eval totaldam %damdealt% + %totaldam%
-  global totaldam
-  if %totaldam% > 50
-    mecho The creature's wounds begin to close.
-  end
- 
-An unset variable counts as zero, so totaldam needs no initialising, and
-no return is needed -- the damage lands as it was.
- 
-See also: TRIGEDIT-MOB-HITPRCNT, TRIGEDIT-MOB-FIGHTING, TRIG-COMMANDS
 #31
 TRIGEDIT-MOB-DEATH TRIG-MOB-DEATH MOB-DEATH MOBDEATH MDEATH  
 
@@ -11248,7 +11903,6 @@ accessed by typing:                                |  TRIGEDIT-MOB-MEMORY    |
 i.e. @RHELP TRIGEDIT-MOB-ACT@n                         |  TRIGEDIT-MOB-LEAVE     |
                                                    |  TRIGEDIT-MOB-DOOR      |
                                                    |  TRIGEDIT-MOB-TIME      |
-                                                   |  TRIGEDIT-MOB-DAMAGE    |
 See also: TRIG-COMMANDS, VARIABLES, EXPRESSIONS    |=========================|
 #31
 TRIGEDIT-VARIABLES VARIABLES TRIG-VARS TRIG-VARIABLES TRIGGER-VARIABLES VARS %VARIABLES% %VARIABLE% %% %TRIGGER% %TRIGGERS% %COMMAND% %WORD% VARIABLES-REFERENCE REFERENCES %VAR% DG-VARIABLES TRIGEDIT-VARS %VARIABLE%
@@ -11900,6 +12554,12 @@ set the roomflag INDOORS so you don't receive the default weather messages.
  
 See also: CONTROL-WEATHER, SUNRISE
 #0
+WELCOR
+
+   Welcor is the head coder of The Builder Academy and uses TBA to develop 
+the tbaMUD codebase.
+
+#0
 WHERE
 
 Usage: where <monster | player>
@@ -12341,7 +13001,8 @@ Examples:
    zedit new 1 100 199 - Creates zone 1 vnums 100 to 199.
    zedit new 123 12300 12499 - Creates zone 123 vnums 12300 to 12499
 
-Max zone number is 655. Max vnum is 65534. 65535 is reserved for corpses.
+Max zone number is 42949671. Max vnum is 4294967294. A corpse, or anything
+else with no prototype, has vnum -1.
    
 See Also: ZEDIT, ZEDIT-NEW, ZEDIT-DELETE
 #31
@@ -12647,7 +13308,16 @@ without Herculean effort of which most of us are not capable.
 ZONES
 
 These zones are maintained in the latest tbaMUD format with DG Scripts on 
-These areas include all donated areas from tbaMUD.
+The Builder Academy (TBA) telnet://tbamud.com:9091/ 
+
+These areas include all donated areas from tbaMUD. We are always looking for 
+new submissions or help on improving the current zones. Please report any bugs,
+typos, ideas, or submissions to:
+
+Rumble
+The Builder Academy
+tbamud.com 9091
+rumble@*tbamud.com
 
    This is a listing of the current areas available:
  

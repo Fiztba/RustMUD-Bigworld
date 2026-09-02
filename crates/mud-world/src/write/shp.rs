@@ -14,6 +14,7 @@
 
 use crate::model::World;
 use crate::write::VnumFmt;
+use mud_data::types::{Idx, NOWHERE};
 
 /// '\t' followed by anything but '\t' becomes '@';
 /// a "\t\t" pair is skipped over UNCHANGED (mirror of parse_at).
@@ -49,11 +50,11 @@ fn push_msg(out: &mut Vec<u8>, msg: &Option<Vec<u8>>, default: &[u8]) {
     out.extend_from_slice(b"~\n");
 }
 
-pub fn write_file(world: &World, zone_rnum: u16) -> Vec<u8> {
+pub fn write_file(world: &World, zone_rnum: Idx) -> Vec<u8> {
     write_file_fmt(world, zone_rnum, VnumFmt::Plain)
 }
 
-pub fn write_file_fmt(world: &World, zone_rnum: u16, fmt: VnumFmt) -> Vec<u8> {
+pub fn write_file_fmt(world: &World, zone_rnum: Idx, fmt: VnumFmt) -> Vec<u8> {
     let zone = &world.zones[zone_rnum as usize];
     let mut out: Vec<u8> = Vec::new();
     out.extend_from_slice(b"CircleMUD v3.0 Shop File~\n");
@@ -116,7 +117,7 @@ pub fn write_file_fmt(world: &World, zone_rnum: u16, fmt: VnumFmt) -> Vec<u8> {
         // The keeper is mandatory, so an export can't drop it the way it
         // drops a product — it goes out in the zone's own numbering even
         // when the mob lives elsewhere (19 shipped shops do).
-        if world.mob_map.contains_key(&(shop.keeper_vnum as u16)) {
+        if world.mob_map.contains_key(&(shop.keeper_vnum as Idx)) {
             fmt.push_zone_slot(&mut mb, shop.keeper_vnum as i64);
         } else {
             push_i64(&mut mb, -1);
@@ -127,10 +128,9 @@ pub fn write_file_fmt(world: &World, zone_rnum: u16, fmt: VnumFmt) -> Vec<u8> {
         parse_tab(&mut mb);
         out.extend_from_slice(&mb);
 
-        // Rooms: the walk stops at the first NOWHERE (65535) entry —
-        // reachable
+        // Rooms: the walk stops at the first NOWHERE entry — reachable
         // mid-list only through exotic wrapped vnums, but mirrored anyway.
-        for &rv in shop.in_rooms.iter().take_while(|&&rv| rv != 65535) {
+        for &rv in shop.in_rooms.iter().take_while(|&&rv| rv != NOWHERE as i32) {
             if !fmt.in_zone(rv as i64) {
                 continue; // same rule as the products
             }
@@ -284,7 +284,7 @@ mod tests {
     /// a world subdirectory — enough real_object/real_mobile coverage for
     /// shops, which produce objects across zone boundaries (e.g. 274.shp
     /// sells zone-30 food). The full boot uses the real mob/obj parsers.
-    fn scan_headers(map: &mut std::collections::HashMap<u16, u16>, dir: PathBuf) {
+    fn scan_headers(map: &mut std::collections::HashMap<Idx, Idx>, dir: PathBuf) {
         for entry in std::fs::read_dir(&dir).unwrap_or_else(|e| panic!("{}: {e}", dir.display()))
         {
             let path = entry.expect("dir entry").path();
@@ -298,8 +298,8 @@ mod tests {
                     if !rest.is_empty() && rest.iter().all(u8::is_ascii_digit) {
                         let v = crate::lex::atol(rest);
                         if v < 99999 {
-                            let next = map.len() as u16;
-                            map.insert(v as u16, next);
+                            let next = map.len() as Idx;
+                            map.insert(v as Idx, next);
                         }
                     }
                 }

@@ -586,8 +586,8 @@ pub struct ObjSaveData {
 }
 
 /// objsave_parse_objects. Reads records from the
-/// reader's current position; unknown vnums are skipped whole, `#65535`
-/// makes a unique object.
+/// reader's current position; unknown vnums are skipped whole, `#-1` (or a
+/// 16-bit build's `#65535`) makes a unique object.
 pub fn objsave_parse_objects(g: &mut Game, r: &mut Reader) -> Vec<ObjSaveData> {
     let mut out: Vec<ObjSaveData> = Vec::new();
     let mut temp: Option<ObjId> = None;
@@ -601,7 +601,8 @@ pub fn objsave_parse_objects(g: &mut Game, r: &mut Reader) -> Vec<ObjSaveData> {
 
         if line.first() == Some(&b'#') {
             let Some(nr) = scan_vnum(&line) else { continue };
-            if nr != NOTHING as i32 && g.world.real_object(nr as Idx).is_none() {
+            let unique = is_nil_vnum(nr);
+            if !unique && g.world.real_object(nr as Idx).is_none() {
                 g.log(format!("SYSERR: Prevented loading of non-existant item #{}.", nr));
                 continue;
             }
@@ -609,7 +610,7 @@ pub fn objsave_parse_objects(g: &mut Game, r: &mut Reader) -> Vec<ObjSaveData> {
                 out.push(ObjSaveData { obj: prev, locate });
                 locate = 0;
             }
-            if nr == NOTHING as i32 {
+            if unique {
                 let o = crate::obj::create_obj();
                 let id = g.objs.insert(o);
                 g.object_list.insert(0, id);

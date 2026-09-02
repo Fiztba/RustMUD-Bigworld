@@ -116,12 +116,13 @@ impl VnumFmt {
 
     /// Emit one vnum, in whichever scheme is in force.
     ///
-    /// The NOWHERE/NOTHING/NOBODY sentinel (65535) passes through
-    /// untouched: a few fields store it raw on disk (a quest's unset
-    /// `obj_reward` is the common case), and it is not a vnum to reattach.
+    /// The nil sentinel passes through untouched, as the -1 it prints as: a
+    /// few fields store it raw on disk (a quest's unset `obj_reward` is the
+    /// common case), and it is not a vnum to reattach. It reaches here
+    /// either as the unsigned value or already narrowed to -1.
     pub fn push_vnum(&self, out: &mut Vec<u8>, v: i64) {
-        if self.is_plain() || v == i64::from(NOWHERE) {
-            push_int(out, v);
+        if self.is_plain() || v == i64::from(NOWHERE) || v == -1 {
+            push_int(out, if v == i64::from(NOWHERE) { -1 } else { v });
             return;
         }
         if !self.in_zone(v) {
@@ -243,10 +244,14 @@ mod vnum_fmt_tests {
 
     #[test]
     fn the_nothing_sentinel_is_never_a_marker() {
-        // 65535 reaches a writer as itself (a quest's unset obj_reward);
-        // ZZ35 would tell the recipient to reattach a room that isn't one.
+        // The sentinel reaches a writer as -1 (or as the unsigned value it
+        // is in memory); a ZZ marker would tell the recipient to reattach a
+        // room that isn't one. 65535 is an ordinary vnum now, so it is
+        // marked like any other out-of-zone number.
         for f in [VnumFmt::qq(&zone(3000, 3099)), VnumFmt::renumber(&zone(3000, 3099), 400)] {
-            assert_eq!(rendered(f, 65535), "65535");
+            assert_eq!(rendered(f, -1), "-1");
+            assert_eq!(rendered(f, i64::from(NOWHERE)), "-1");
+            assert!(rendered(f, 65535).starts_with("ZZ"));
         }
     }
 

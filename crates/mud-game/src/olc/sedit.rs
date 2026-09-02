@@ -121,7 +121,7 @@ pub fn do_oasis_sedit(g: &mut Game, chid: CharId, argument: &[u8], _cmd: usize, 
     if number == NOWHERE as i32 {
         number = atoi(&buf1);
     }
-    if number < 0 || number > u16::MAX as i32 {
+    if number < 0 {
         send_to_char(g, chid, b"That shop VNUM can't exist.\r\n");
         return;
     }

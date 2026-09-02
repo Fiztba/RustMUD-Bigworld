@@ -11,8 +11,8 @@
 //! make `qedit save 30` save zone 0, and using a vnum when the builder
 //! omits the argument would make the no-argument save fail outright.
 //! * The five vnum-typed quest fields (`qm`, `prereq`, `obj_reward`,
-//! `prev_quest`, `next_quest`) are stored as u16, so the editor's
-//! "-1 for none" answers land in them as 65535. `idx_store` does that.
+//! `prev_quest`, `next_quest`) are stored as Idx, so the editor's
+//! "-1 for none" answers land in them as NOTHING. `idx_store` does that.
 
 use std::cmp::Ordering;
 
@@ -76,18 +76,18 @@ fn limit(v: i32, low: i32, high: i32) -> i32 {
     high.min(v.max(low))
 }
 
-/// Narrow to u16 and back, which is what a store into a vnum-typed quest
-/// field does: -1 becomes 65535.
+/// Narrow to Idx and back, which is what a store into a vnum-typed quest
+/// field does: -1 becomes NOTHING.
 fn idx_store(n: i32) -> i32 {
-    (n as u16) as i32
+    (n as Idx) as i32
 }
 
 fn mob_of(g: &Game, vnum: i32) -> Option<usize> {
-    g.world.real_mobile(vnum as u16).map(|r| r as usize)
+    g.world.real_mobile(vnum as Idx).map(|r| r as usize)
 }
 
 fn obj_of(g: &Game, vnum: i32) -> Option<usize> {
-    g.world.real_object(vnum as u16).map(|r| r as usize)
+    g.world.real_object(vnum as Idx).map(|r| r as usize)
 }
 
 /// quest_types[] guarded against AQ_UNDEFINED (B55).
@@ -143,7 +143,7 @@ pub fn do_oasis_qedit(g: &mut Game, chid: CharId, argument: &[u8], _cmd: usize, 
     if number == NOWHERE as i32 {
         number = atoi(&buf1);
     }
-    if number < 0 || number > u16::MAX as i32 {
+    if number < 0 {
         send_to_char(g, chid, b"That quest VNUM can't exist.\r\n");
         return;
     }
@@ -309,7 +309,7 @@ fn qedit_disp_menu(g: &mut Game, di: usize, olc: &mut OlcData) {
             None => b"An unknown object".to_vec(),
         },
         t if t == AQ_ROOM_FIND || t == AQ_ROOM_CLEAR => {
-            match g.world.real_room(q.target as u16) {
+            match g.world.real_room(q.target as Idx) {
                 Some(r) => g.world.rooms[r as usize].name.clone().unwrap_or_default(),
                 None => b"An unknown room".to_vec(),
             }

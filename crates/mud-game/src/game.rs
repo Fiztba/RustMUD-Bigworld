@@ -383,9 +383,9 @@ impl Game {
         &mut self.rooms[r as usize]
     }
 
-    /// real_room helper, keyed by u16 vnum.
+    /// real_room helper, keyed by vnum.
     pub fn real_room(&self, vnum: i32) -> Option<RoomRnum> {
-        if !(0..65535).contains(&vnum) {
+        if vnum < 0 {
             return None;
         }
         self.world.real_room(vnum as Idx)

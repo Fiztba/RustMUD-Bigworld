@@ -1,12 +1,35 @@
 //! Core scalar types and limit constants.
 //!
-//! Index types are unsigned shorts: vnums range 0..=65534 and 65535 is the
-//! shared "none" sentinel for rooms, objects, mobs, and flags alike. World
-//! files encode these numbers directly, so the widths are part of the wire
-//! format.
+//! Index types are 32 bits wide: vnums range 0..=MAX_VNUM and the top of the
+//! range is the shared "none" sentinel for rooms, objects, mobs, and flags
+//! alike. World files write these numbers as signed decimal, so the sentinel
+//! is -1 on disk and to scripts, whatever the width in memory.
 
 /// Index type for all virtual/real numbers.
-pub type Idx = u16;
+pub type Idx = u32;
+
+/// Highest vnum a world file or OLC will accept. The top of the range is the
+/// nil sentinel, so every legal vnum stays distinct from it.
+pub const MAX_VNUM: Idx = Idx::MAX - 1;
+
+/// Vnum written to disk for "no such thing" by builds whose index type was an
+/// unsigned short. Readers accept it alongside -1 so that worlds, player
+/// files and rent files saved before the widening still load; writers emit
+/// -1.
+pub const LEGACY_NOWHERE: i64 = 65535;
+
+/// Whether readers still honour LEGACY_NOWHERE. Leave this on to load a world
+/// or player base that was saved before the widening. Turn it off in a world
+/// that never was, and vnum 65535 becomes an ordinary vnum again.
+pub const ACCEPT_LEGACY_NOWHERE: bool = true;
+
+/// True for the numbers a data file may use to mean "no such thing". Files
+/// are read as signed decimal, so the nil sentinel arrives as -1 whatever
+/// width the index type has.
+pub fn is_nil_vnum<T: Into<i64>>(n: T) -> bool {
+    let n = n.into();
+    n == -1 || (ACCEPT_LEGACY_NOWHERE && n == LEGACY_NOWHERE)
+}
 
 pub type RoomVnum = Idx;
 pub type ObjVnum = Idx;
@@ -200,8 +223,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sentinels_are_u16_max() {
-        assert_eq!(NOWHERE, 65535);
+    fn sentinels_are_idx_max() {
+        assert_eq!(NOWHERE, u32::MAX);
+        assert_eq!(MAX_VNUM, u32::MAX - 1);
+        assert!(is_nil_vnum(-1) && is_nil_vnum(65535) && !is_nil_vnum(65534));
         assert_eq!(LARGE_BUFSIZE, 24448);
     }
 

@@ -599,12 +599,12 @@ pub fn in_save_list(g: &Game, zone: Idx, type_: i32) -> bool {
 /// so this half stays silent and returns false on I/O failure.
 pub fn write_world_file(g: &mut Game, zone_rnum: usize, type_: i32) -> Option<usize> {
     let (subdir, ext, body): (&str, &str, Vec<u8>) = match type_ {
-        SL_MOB => ("mob", "mob", mud_world::write::mob::write_file(&g.world, zone_rnum as u16)),
-        SL_OBJ => ("obj", "obj", mud_world::write::obj::write_file(&g.world, zone_rnum as u16)),
-        SL_ZON => ("zon", "zon", mud_world::write::zon::write_file(&g.world, zone_rnum as u16)),
-        SL_WLD => ("wld", "wld", mud_world::write::wld::write_file(&g.world, zone_rnum as u16)),
-        SL_SHP => ("shp", "shp", mud_world::write::shp::write_file(&g.world, zone_rnum as u16)),
-        SL_QST => ("qst", "qst", mud_world::write::qst::write_file(&g.world, zone_rnum as u16)),
+        SL_MOB => ("mob", "mob", mud_world::write::mob::write_file(&g.world, zone_rnum as Idx)),
+        SL_OBJ => ("obj", "obj", mud_world::write::obj::write_file(&g.world, zone_rnum as Idx)),
+        SL_ZON => ("zon", "zon", mud_world::write::zon::write_file(&g.world, zone_rnum as Idx)),
+        SL_WLD => ("wld", "wld", mud_world::write::wld::write_file(&g.world, zone_rnum as Idx)),
+        SL_SHP => ("shp", "shp", mud_world::write::shp::write_file(&g.world, zone_rnum as Idx)),
+        SL_QST => ("qst", "qst", mud_world::write::qst::write_file(&g.world, zone_rnum as Idx)),
         _ => return None,
     };
     let number = g.world.zones[zone_rnum].number;

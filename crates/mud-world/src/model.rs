@@ -26,7 +26,7 @@ pub struct Exit {
     pub keyword: Option<BStr>,
     /// EX_* bits as stored after door-flag mapping (0..=4 -> bit combos).
     pub exit_info: u16,
-    /// Key object vnum; NOTHING for none (file -1 or 65535).
+    /// Key object vnum; NOTHING for none (file -1, or a 16-bit build's 65535).
     pub key: Idx,
     /// Raw to_room vnum as parsed (file value; 0 and -1 both mean "none").
     pub to_room_vnum: i32,

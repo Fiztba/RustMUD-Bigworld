@@ -12,6 +12,7 @@
 
 use crate::model::{MobProto, World};
 use crate::write::{push_int, VnumFmt};
+use mud_data::types::Idx;
 
 const UNDEFINED: &[u8] = b"An undefined string.\n";
 
@@ -57,11 +58,11 @@ fn flag_int(v: u32) -> i64 {
 
 /// save_mobiles: every existing mob in the zone's vnum range, in
 /// ascending vnum order, then the "$\n" terminator.
-pub fn write_file(world: &World, zone_rnum: u16) -> Vec<u8> {
+pub fn write_file(world: &World, zone_rnum: Idx) -> Vec<u8> {
     write_file_fmt(world, zone_rnum, VnumFmt::Plain)
 }
 
-pub fn write_file_fmt(world: &World, zone_rnum: u16, fmt: VnumFmt) -> Vec<u8> {
+pub fn write_file_fmt(world: &World, zone_rnum: Idx, fmt: VnumFmt) -> Vec<u8> {
     let mut out = Vec::new();
     let Some(zone) = world.zones.get(zone_rnum as usize) else {
         return out; // C logs an invalid-zone SYSERR and writes nothing.
@@ -177,7 +178,7 @@ mod tests {
     use crate::parse;
     use std::path::PathBuf;
 
-    fn zone(number: u16, bot: u16, top: u16) -> Zone {
+    fn zone(number: Idx, bot: Idx, top: Idx) -> Zone {
         Zone { number, bot, top, ..Default::default() }
     }
 

@@ -578,8 +578,8 @@ pub fn split_argument(argument: &[u8]) -> (BStr, BStr) {
 }
 
 /// atoidx: strtol, then anything negative or above
-/// IDXTYPE_MAX collapses to NOWHERE. Callers store the result in an `int`,
-/// so a negative argument arrives as 65535, not as -1.
+/// MAX_VNUM collapses to NOWHERE. Callers store the result in an `int`,
+/// so the sentinel arrives as -1.
 pub fn atoidx(s: &[u8]) -> i32 {
     let mut p = 0;
     while p < s.len() && s[p].is_ascii_whitespace() {
@@ -595,7 +595,7 @@ pub fn atoidx(s: &[u8]) -> i32 {
     let mut digits = false;
     while p < s.len() && s[p].is_ascii_digit() {
         digits = true;
-        n = (n * 10 + (s[p] - b'0') as i64).min(i64::from(u16::MAX) + 1);
+        n = (n * 10 + (s[p] - b'0') as i64).min(i64::from(MAX_VNUM) + 1);
         p += 1;
     }
     if !digits {
@@ -605,7 +605,7 @@ pub fn atoidx(s: &[u8]) -> i32 {
     if neg {
         n = -n;
     }
-    if !(0..=i64::from(u16::MAX)).contains(&n) {
+    if !(0..=i64::from(MAX_VNUM)).contains(&n) {
         return NOWHERE as i32;
     }
     n as i32

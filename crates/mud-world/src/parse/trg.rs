@@ -9,6 +9,7 @@
 
 use crate::lex::{Reader, asciiflag_conv};
 use crate::model::{Trigger, World};
+use mud_data::types::Idx;
 
 /// The whitespace bytes the world-file grammars recognise.
 pub(crate) fn is_ws(b: u8) -> bool {
@@ -101,8 +102,10 @@ pub fn parse_file(world: &mut World, data: &[u8], filename: &str) -> Result<(), 
                 Some(v) => v,
                 None => return Err(format!("Format error after trg #{last}")),
             };
-            if nr >= 99999 {
-                return Ok(());
+            // Vnums index the world tables, so they may not be negative. A file
+            // that ends on a record rather than on '$' is a format error.
+            if nr < 0 {
+                return Err(format!("SYSERR: Negative trg vnum #{nr} in {filename}."));
             }
             parse_trigger(world, &mut r, nr)?;
         } else {
@@ -152,9 +155,9 @@ fn parse_trigger(world: &mut World, r: &mut Reader, nr: i32) -> Result<(), Strin
         return Err(format!("empty script body crashes C's strtok ({errors})"));
     }
 
-    // The stored vnum is a u16, so a larger value truncates.
-    let vnum = nr as u16;
-    let rnum = world.triggers.len() as u16;
+    // The stored vnum is a Idx, so a larger value truncates.
+    let vnum = nr as Idx;
+    let rnum = world.triggers.len() as Idx;
     world.triggers.push(Trigger {
         vnum,
         name,
@@ -220,10 +223,9 @@ mod tests {
     }
 
     #[test]
-    fn vnum_99999_acts_as_eof_and_dollar_ends() {
+    fn vnum_99999_is_a_record_not_eof() {
         let mut w = World::default();
-        parse_file(&mut w, b"#1\nA~\n0 g 100\n~\n* x\n~\n#99999\njunk", "t.trg").unwrap();
-        assert_eq!(w.triggers.len(), 1);
+        assert!(parse_file(&mut w, b"#1\nA~\n0 g 100\n~\n* x\n~\n#99999\njunk", "t.trg").is_err());
     }
 
     #[test]

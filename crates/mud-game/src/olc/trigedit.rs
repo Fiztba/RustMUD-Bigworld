@@ -181,7 +181,7 @@ pub fn dg_script_edit_parse(g: &mut Game, di: usize, olc: &mut OlcData, arg: &[u
                 pos = 999;
             }
             if pos > 0 && vnum != 0 {
-                if g.world.real_trigger(vnum as u16).is_none() || !(0..=65535).contains(&vnum) {
+                if vnum < 0 || g.world.real_trigger(vnum as Idx).is_none() {
                     write_to_desc(
                         g,
                         di,
@@ -263,7 +263,7 @@ pub fn do_oasis_trigedit(g: &mut Game, chid: CharId, argument: &[u8], _cmd: usiz
         return;
     }
     let number = atoi(argument);
-    if number < 0 || number > u16::MAX as i32 {
+    if number < 0 {
         send_to_char(g, chid, b"That trigger VNUM can't exist.\r\n");
         return;
     }
@@ -1077,7 +1077,7 @@ pub fn trigedit_save(g: &mut Game, di: usize, olc: &mut OlcData) {
 fn trigedit_write_zone(g: &mut Game, zrnum: usize, invis_lev: i16) -> bool {
     let level = (LVL_GOD as i16).max(invis_lev) as u8;
     let zone = g.world.zones[zrnum].number;
-    let body = mud_world::write::trg::write_file(&g.world, zrnum as u16);
+    let body = mud_world::write::trg::write_file(&g.world, zrnum as Idx);
     let dir = g.lib_dir.join("world").join("trg");
     let newname = dir.join(format!("{}.new", zone));
     let oldname = dir.join(format!("{}.trg", zone));

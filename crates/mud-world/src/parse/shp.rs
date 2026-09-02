@@ -12,6 +12,7 @@
 
 use crate::lex::Reader;
 use crate::model::{Shop, ShopBuyData, World};
+use mud_data::types::{is_nil_vnum, Idx};
 
 /// The buy-type name table. The list is
 /// scanned in order with a case-insensitive PREFIX match, so e.g. a line
@@ -154,7 +155,7 @@ fn read_line_f32(r: &mut Reader, ctx: &str) -> Result<f32, String> {
 
 /// Drop NOTHING/negative values, cap the list at
 /// MAX_SHOP_OBJ, and for the producing list run real_object — the vnum is
-/// truncated to u16 for the lookup and the entry vanishes when no such
+/// truncated to Idx for the lookup and the entry vanishes when no such
 /// object exists. The looked-up vnum is stored, which is what the writer
 /// prints back.
 fn add_to_shop_list(
@@ -163,15 +164,15 @@ fn add_to_shop_list(
     val: i32,
     world: &mut World,
 ) {
-    if val != 65535 && val >= 0 && kept.len() < MAX_SHOP_OBJ {
+    if !is_nil_vnum(val) && val >= 0 && kept.len() < MAX_SHOP_OBJ {
         let stored = match kind {
             ListKind::Produce => {
-                let vnum = val as u16;
+                let vnum = val as Idx;
                 world.obj_map.contains_key(&vnum).then_some(vnum as i32)
             }
-            // Rooms are copied into a room_vnum (u16) array by the boot
+            // Rooms are copied into a room_vnum (Idx) array by the boot
             // loop; buy-types stay full ints.
-            ListKind::Room => Some((val as u16) as i32),
+            ListKind::Room => Some((val as Idx) as i32),
             // A trade entry names an item type, but both readers fall through
             // to a bare number when the line does not match one of the names,
             // so a.shp file can put anything here — and `list_detailed_shop`
@@ -390,11 +391,10 @@ pub fn parse_file(world: &mut World, data: &[u8], filename: &str) -> Result<(), 
             let temper1 = read_line_i64(&mut r, &ctx)? as i32;
             // %ld into bitvector_t, narrowed to u32 here.
             let bitvector = read_line_i64(&mut r, &ctx)? as u32;
-            // %hd: the value is stored through a 16-bit field, so it wraps
-            // to short range; kept as the resulting 0..=65535 vnum (
-            // immediately real_mobiles it — our writer defers that
-            // lookup, producing identical output).
-            let keeper_vnum = ((read_line_i64(&mut r, &ctx)? as i16) as u16) as i32;
+            // Read as an int and stored through the vnum type, so -1 is
+            // NOBODY (the C immediately real_mobiles it — our writer defers
+            // that lookup, producing identical output).
+            let keeper_vnum = ((read_line_i64(&mut r, &ctx)? as i32) as Idx) as i32;
             let with_who = read_line_i64(&mut r, &ctx)? as i32;
 
             let in_rooms = read_list(&mut r, world, new_format, 1, ListKind::Room, &ctx)?;
@@ -405,7 +405,7 @@ pub fn parse_file(world: &mut World, data: &[u8], filename: &str) -> Result<(), 
             let close2 = read_line_i64(&mut r, &ctx)? as i32;
 
             world.shops.push(Shop {
-                vnum: temp as u16,
+                vnum: temp as Idx,
                 producing: producing.into_iter().map(|b| b.type_).collect(),
                 profit_buy,
                 profit_sell,
@@ -441,10 +441,10 @@ pub fn parse_file(world: &mut World, data: &[u8], filename: &str) -> Result<(), 
 mod tests {
     use super::*;
 
-    fn world_with_objs(vnums: &[u16]) -> World {
+    fn world_with_objs(vnums: &[Idx]) -> World {
         let mut w = World::default();
         for (i, &v) in vnums.iter().enumerate() {
-            w.obj_map.insert(v, i as u16);
+            w.obj_map.insert(v, i as Idx);
         }
         w
     }
@@ -571,8 +571,8 @@ mod tests {
         data.extend_from_slice(MSGS);
         data.extend_from_slice(b"0\n0\n-1\n0\n-1\n0\n0\n0\n0\n$~\n");
         parse_file(&mut w, &data, "t.shp").expect("parse");
-        // %hd of "-1" stored through the unsigned 16-bit keeper field.
-        assert_eq!(w.shops[0].keeper_vnum, 65535);
+        // "-1" stored through the unsigned keeper field is NOBODY.
+        assert_eq!(w.shops[0].keeper_vnum, mud_data::types::NOBODY as i32);
     }
 
     #[test]

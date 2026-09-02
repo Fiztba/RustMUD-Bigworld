@@ -1142,7 +1142,7 @@ smile
 Chef cooks crabs!~
 0 j 100
 ~
-if %object.vnum% == 65535
+if %object.vnum% == -1
   %purge% %object%
   say Alright, I'll start cooking!
   wait 1 sec

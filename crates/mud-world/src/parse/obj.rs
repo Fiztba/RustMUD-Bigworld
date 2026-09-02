@@ -43,8 +43,10 @@ pub fn parse_file(world: &mut World, data: &[u8], filename: &str) -> Result<(), 
             let last = nr;
             nr = parse_hash_vnum(&line)
                 .ok_or_else(|| format!("SYSERR: Format error after obj #{last}"))?;
-            if nr >= 99999 {
-                return Ok(());
+            // Vnums index the world tables, so they may not be negative. A file
+            // that ends on a record rather than on '$' is a format error.
+            if nr < 0 {
+                return Err(format!("SYSERR: Negative obj vnum #{nr} in {filename}."));
             }
             pending = Some(parse_object(world, &mut r, nr)?);
         } else {
@@ -390,7 +392,7 @@ mod tests {
         // Eight characters, so the width stops one short and the remainder
         // starts with a letter -- no digits, no vnum, the line is dropped.
         assert_eq!(with_t("TTTTTTTX 3017
-"), Vec::<u16>::new());
+"), Vec::<Idx>::new());
 
         // The same shape with digits left over: those are what the vnum
         // conversion sees, so 99 attaches and 3017 never does.

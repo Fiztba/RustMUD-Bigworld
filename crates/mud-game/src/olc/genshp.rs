@@ -82,7 +82,7 @@ fn resolve_products(g: &Game, shop: &Shop) -> Vec<Idx> {
     shop.producing
         .iter()
         .filter_map(|&v| {
-            if !(0..=u16::MAX as i32).contains(&v) {
+            if v < 0 {
                 return None;
             }
             g.world.real_object(v as Idx)

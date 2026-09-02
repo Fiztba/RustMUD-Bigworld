@@ -20,7 +20,7 @@
 use std::io::{self, Write as _};
 use std::path::{Path, PathBuf};
 
-use mud_data::types::MAX_NAME_LENGTH;
+use mud_data::types::{is_nil_vnum, Idx, MAX_NAME_LENGTH, NOWHERE};
 
 use crate::lex::{Reader, asciiflag_conv, atol};
 use crate::write::sprintascii;
@@ -32,7 +32,7 @@ const MAX_AFFECT: usize = 32;
 /// bound for the legacy 5-token affect bit number.
 const NUM_AFF_FLAGS: i32 = 23;
 /// The NOTHING/NOWHERE sentinel, as formatted through %d.
-const NOTHING: i32 = 65535;
+const NOTHING: i32 = mud_data::types::NOTHING as i32;
 
 /// Everything the ASCII pfile can carry.
 #[derive(Debug, Clone)]
@@ -94,8 +94,8 @@ pub struct PlayerFile {
     pub questpoints: i32,
     pub quest_counter: i32,
     pub current_quest: i32,
-    pub completed_quests: Vec<u16>, // Qest:
-    pub triggers: Vec<u16>,         // Trig: lines
+    pub completed_quests: Vec<Idx>, // Qest:
+    pub triggers: Vec<Idx>,         // Trig: lines
     pub skills: Vec<(i32, i32)>,    // Skil: pairs
     pub affects: Vec<PfAffect>,     // Affs:
     pub aliases: Vec<PfAlias>,      // Alis:
@@ -131,8 +131,8 @@ pub struct PfVar {
 
 impl Default for PlayerFile {
     /// everything 0/absent except PFDEF_OLC = NOWHERE
-    /// (65535), PFDEF_PAGELENGTH = 22, PFDEF_SCREENWIDTH = 80 and
-    /// PFDEF_CURRQUEST = NOTHING (65535). PFDEF_LOADROOM is 0 (§13.6).
+    /// (-1), PFDEF_PAGELENGTH = 22, PFDEF_SCREENWIDTH = 80 and
+    /// PFDEF_CURRQUEST = NOTHING (-1). PFDEF_LOADROOM is 0 (§13.6).
     fn default() -> Self {
         PlayerFile {
             name: None,
@@ -446,8 +446,8 @@ fn load_skills(r: &mut Reader, pf: &mut PlayerFile) {
     }
 }
 
-/// load_quests: one vnum per line until 65535 (NOTHING).
-/// The cast to ush_int is preserved (`num as u16`).
+/// load_quests: one vnum per line until the nil sentinel: -1, or the 65535
+/// a 16-bit build wrote.
 fn load_quests(r: &mut Reader, pf: &mut PlayerFile) {
     let mut num = NOTHING;
     loop {
@@ -455,8 +455,8 @@ fn load_quests(r: &mut Reader, pf: &mut PlayerFile) {
         let mut slot = [num];
         scan_ints_into(&line, &mut slot);
         num = slot[0];
-        if num != NOTHING {
-            pf.completed_quests.push(num as u16);
+        if !is_nil_vnum(num) {
+            pf.completed_quests.push(num as Idx);
         } else {
             break;
         }
@@ -628,11 +628,17 @@ pub fn load_char(lib: &Path, name: &[u8]) -> Option<(PlayerFile, Vec<String>)> {
 
             // Qpnt is the backward-compatibility alias.
             b"Qstp" | b"Qpnt" => pf.questpoints = atoi(&line),
-            b"Qcur" => pf.current_quest = atoi(&line),
+            b"Qcur" => {
+                let v = atoi(&line);
+                pf.current_quest = if is_nil_vnum(v) { NOTHING } else { v };
+            }
             b"Qcnt" => pf.quest_counter = atoi(&line),
             b"Qest" => load_quests(&mut r, &mut pf),
 
-            b"Room" => pf.load_room = atoi(&line),
+            b"Room" => {
+                let v = atoi(&line);
+                pf.load_room = if is_nil_vnum(v) { NOWHERE as i32 } else { v };
+            }
 
             b"Sex " => pf.sex = atoi(&line),
             b"ScrW" => pf.screen_width = atoi(&line),
@@ -648,7 +654,7 @@ pub fn load_char(lib: &Path, name: &[u8]) -> Option<(PlayerFile, Vec<String>)> {
             b"Titl" => pf.title = Some(line),
             // This layer always records trigger vnums; whether they are
             // attached is the game layer's business.
-            b"Trig" => pf.triggers.push(atoi(&line) as u16),
+            b"Trig" => pf.triggers.push(atoi(&line) as Idx),
 
             b"Vars" => {
                 let count = atoi(&line);
@@ -789,7 +795,7 @@ pub fn save_char(pf: &PlayerFile) -> Vec<u8> {
     if pf.invis_level != 0 {
         put_int(&mut out, b"Invs", pf.invis_level.into());
     }
-    // PFDEF_LOADROOM is 0, so NOWHERE (65535) IS written (quirk §13.6).
+    // PFDEF_LOADROOM is 0, so NOWHERE (as -1) IS written (quirk §13.6).
     if pf.load_room != 0 {
         put_int(&mut out, b"Room", pf.load_room.into());
     }
@@ -882,7 +888,7 @@ pub fn save_char(pf: &PlayerFile) -> Vec<u8> {
             out.extend_from_slice(vnum.to_string().as_bytes());
             out.push(b'\n');
         }
-        out.extend_from_slice(b"65535\n"); // NOTHING terminator
+        out.extend_from_slice(b"-1\n"); // NOTHING terminator
     }
     if pf.current_quest != NOTHING {
         put_int(&mut out, b"Qcur", pf.current_quest.into());
@@ -1150,10 +1156,10 @@ mod tests {
     #[test]
     fn defaults_match_pfdefaults() {
         let pf = PlayerFile::default();
-        assert_eq!(pf.olc_zone, 65535);
+        assert_eq!(pf.olc_zone, -1);
         assert_eq!(pf.page_length, 22);
         assert_eq!(pf.screen_width, 80);
-        assert_eq!(pf.current_quest, 65535);
+        assert_eq!(pf.current_quest, -1);
         assert_eq!(pf.load_room, 0); // quirk §13.6: 0, not NOWHERE
         assert_eq!(pf.level, 0);
         assert_eq!(pf.hunger, 0);
@@ -1215,7 +1221,7 @@ mod tests {
             wimpy: 10,
             freeze_level: 31,
             invis_level: 33,
-            load_room: 65535, // NOWHERE is written because != 0 (§13.6)
+            load_room: -1, // NOWHERE is written because != 0 (§13.6)
             bad_pws: 2,
             practices: 5,
             hunger: 24,
@@ -1285,11 +1291,11 @@ mod tests {
         assert!(contains(&bytes1, b"Act : ac a 0 F\n"));
         assert!(contains(&bytes1, b"Aff : d 0 A 0\n"));
         assert!(contains(&bytes1, b"Pref: abcd 0 0 ab\n"));
-        assert!(contains(&bytes1, b"Room: 65535\n"));
+        assert!(contains(&bytes1, b"Room: -1\n"));
         assert!(contains(&bytes1, b"Hit : 45/60\n"));
         assert!(contains(&bytes1, b"Str : 18/50\n"));
         assert!(contains(&bytes1, b"Thir: -1\n"));
-        assert!(contains(&bytes1, b"Qest:\n3000\n3001\n65535\n"));
+        assert!(contains(&bytes1, b"Qest:\n3000\n3001\n-1\n"));
         assert!(contains(&bytes1, b"Trig: 100\nTrig: 200\n"));
         assert!(contains(&bytes1, b"Skil:\n131 75\n141 40\n0 0\n"));
         assert!(contains(&bytes1, b"2 10 1 1 -2147483648 2 3 -2147483647\n"));
@@ -1311,7 +1317,7 @@ mod tests {
         assert_eq!(loaded.skills, pf.skills);
         assert_eq!(loaded.completed_quests, pf.completed_quests);
         assert_eq!(loaded.triggers, pf.triggers);
-        assert_eq!(loaded.load_room, 65535);
+        assert_eq!(loaded.load_room, -1);
         assert_eq!(loaded.thirst, -1);
 
         let bytes2 = save_char(&loaded);
@@ -1414,10 +1420,11 @@ mod tests {
         assert_eq!((pf.intel, pf.wis, pf.dex, pf.con, pf.cha), (11, 12, 16, 13, 10));
         assert_eq!((pf.ac, pf.gold, pf.exp), (100, 1500, 12000));
         // Absent tags keep defaults; unknown "Junk:" silently ignored.
-        assert_eq!(pf.olc_zone, 65535);
+        assert_eq!(pf.olc_zone, -1);
         assert_eq!(pf.page_length, 22);
         assert_eq!(pf.screen_width, 80);
-        assert_eq!(pf.current_quest, 65535);
+        assert_eq!(pf.current_quest, -1);
+        // The fixture ends its quest list on a 16-bit build's 65535.
         assert_eq!(pf.completed_quests, vec![3000]);
         assert_eq!(pf.skills, vec![(131, 75), (141, 40)]);
         // Second affect row is the legacy 5-token form: bit 3 set.

@@ -204,8 +204,8 @@ set item %inroom.contents%
 while %item%
   * Target the next item in room. In case it is devoured.
   set next_item %item.next_in_list%
-  * Check for a corpse. Corpse on TBA is vnum 65535. Stock is -1.
-  if %item.vnum(65535)%
+  * Check for a corpse. A corpse has no prototype, so its vnum is -1.
+  if %item.vnum(-1)%
     emote savagely devours a corpse.
     %purge% %item%
     halt

@@ -12,12 +12,13 @@
 
 use super::{sprintascii, VnumFmt};
 use crate::model::World;
+use mud_data::types::Idx;
 
-pub fn write_file(world: &World, zone_rnum: u16) -> Vec<u8> {
+pub fn write_file(world: &World, zone_rnum: Idx) -> Vec<u8> {
     write_file_fmt(world, zone_rnum, VnumFmt::Plain)
 }
 
-pub fn write_file_fmt(world: &World, zone_rnum: u16, fmt: VnumFmt) -> Vec<u8> {
+pub fn write_file_fmt(world: &World, zone_rnum: Idx, fmt: VnumFmt) -> Vec<u8> {
     let zone = &world.zones[zone_rnum as usize];
     let mut out: Vec<u8> = Vec::new();
 
@@ -177,7 +178,7 @@ mod tests {
     fn writes_in_vnum_order_with_tabs_raw() {
         let mut w = World::default();
         w.zones.push(Zone { number: 0, bot: 0, top: 99, ..Default::default() });
-        for (i, vnum) in [9u16, 4].into_iter().enumerate() {
+        for (i, vnum) in [9u32, 4].into_iter().enumerate() {
             w.triggers.push(Trigger {
                 vnum,
                 name: Some(b"N".to_vec()),
@@ -187,7 +188,7 @@ mod tests {
                 arglist: Some(b"south".to_vec()),
                 cmdlist: vec![b"say \tRhi@@\tn".to_vec()],
             });
-            w.trig_map.insert(vnum, i as u16);
+            w.trig_map.insert(vnum, i as Idx);
         }
         assert_eq!(
             write_file(&w, 0),

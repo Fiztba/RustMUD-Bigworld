@@ -5,14 +5,15 @@
 //! "#<vnum>", the five strings (name falls back to "Untitled" and is NOT
 //! strip_cr'd; desc/info/done/quit fall back to "undefined" and ARE),
 //! "type qm flags target prev next prereq" with NOBODY/NOTHING written as
-//! -1, "value[0..4] returnmob quantity" (returnmob's 65535 becomes -1),
-//! "gold exp obj_reward" with obj_reward RAW (an unset reward stays 65535,
+//! -1, "value[0..4] returnmob quantity" (returnmob's NOTHING becomes -1),
+//! "gold exp obj_reward" with obj_reward RAW (an unset reward is -1,
 //! as it is on disk), and "S". The whole record passes through
 //! convert_from_tabs (parse_tab: '\t'->'@' except "\t\t" pairs). Records
 //! of MAX_STRING_LENGTH or more are skipped. File tail "$~\n".
 
 use super::{sprintascii, VnumFmt};
 use crate::model::World;
+use mud_data::types::Idx;
 
 const MAX_STRING_LENGTH: usize = 49152;
 
@@ -45,9 +46,9 @@ fn push_str(out: &mut Vec<u8>, s: &Option<Vec<u8>>, default: &[u8], strip_cr: bo
     out.extend_from_slice(b"~\n");
 }
 
-/// The `x == NOTHING ? -1: x` dance (NOTHING/NOBODY = 65535).
+/// The `x == NOTHING ? -1: x` dance.
 fn none_as_minus_one(v: i32) -> i64 {
-    if v == 65535 { -1 } else { v as i64 }
+    if v == mud_data::types::NOTHING as i32 { -1 } else { v as i64 }
 }
 
 /// A quest field holding a mob/obj/room/quest vnum, written -1 when unset.
@@ -60,11 +61,11 @@ fn push_vnum_field(out: &mut Vec<u8>, fmt: VnumFmt, v: i32) {
     }
 }
 
-pub fn write_file(world: &World, zone_rnum: u16) -> Vec<u8> {
+pub fn write_file(world: &World, zone_rnum: Idx) -> Vec<u8> {
     write_file_fmt(world, zone_rnum, VnumFmt::Plain)
 }
 
-pub fn write_file_fmt(world: &World, zone_rnum: u16, fmt: VnumFmt) -> Vec<u8> {
+pub fn write_file_fmt(world: &World, zone_rnum: Idx, fmt: VnumFmt) -> Vec<u8> {
     let zone = &world.zones[zone_rnum as usize];
     let mut out: Vec<u8> = Vec::new();
 
@@ -121,7 +122,7 @@ pub fn write_file_fmt(world: &World, zone_rnum: u16, fmt: VnumFmt) -> Vec<u8> {
         rec.push(b' ');
         push_i64(&mut rec, q.exp_reward as i64);
         rec.push(b' ');
-        // obj_reward is written RAW — NOTHING appears as 65535 on disk,
+        // obj_reward is written RAW — NOTHING appears as -1 on disk,
         // which push_vnum passes through rather than marking ZZ35.
         fmt.push_vnum(&mut rec, q.obj_reward as i64);
         rec.push(b'\n');
@@ -159,7 +160,7 @@ mod tests {
         w.zones.push(Zone { number: 0, bot: 0, top: 99, ..Default::default() });
         w.quests.push(Quest {
             vnum: 7,
-            qm_vnum: 65535, // NOBODY => -1
+            qm_vnum: -1, // NOBODY => -1
             flags: 1,
             type_: 3,
             name: None,                                // => "Untitled"
@@ -171,19 +172,19 @@ mod tests {
             penalty: 0,
             min_level: 1,
             max_level: 34,
-            target: 65535,  // => -1
+            target: -1,  // => -1
             prereq: 4,
             obj_in: -1,     // int slot: already -1
             obj_out: 2,
             time: 60,
             gold_reward: 5,
             exp_reward: 0,
-            obj_reward: 65535, // written RAW
-            prev_quest: 65535,
+            obj_reward: -1, // written RAW
+            prev_quest: -1,
             next_quest: 200,
         });
         let want: &[u8] = b"#7\nUntitled~\nmulti\nline\n~\nsee @Rred@n~\nundefined~\nundefined~\n\
-            3 -1 a -1 -1 200 4\n10 0 1 34 60 -1 2\n5 0 65535\nS\n$~\n";
+            3 -1 a -1 -1 200 4\n10 0 1 34 60 -1 2\n5 0 -1\nS\n$~\n";
         assert_eq!(
             String::from_utf8_lossy(&write_file(&w, 0)),
             String::from_utf8_lossy(want)
@@ -222,21 +223,21 @@ mod tests {
             time: 60,
             gold_reward: 500,
             exp_reward: 0,
-            obj_reward: 65535, // unset: stays raw, never ZZ35
-            prev_quest: 65535,
+            obj_reward: -1, // unset: stays raw
+            prev_quest: -1,
             next_quest: 105,
         });
         let qq = write_file_fmt(&w, 0, VnumFmt::qq(&w.zones[0]));
         let qq = String::from_utf8_lossy(&qq).into_owned();
         assert!(qq.starts_with("#QQ04\n"), "{qq}");
         assert!(qq.contains("\n3 QQ79 a ZZ01 -1 QQ05 QQ22\n"), "{qq}");
-        assert!(qq.contains("\n10 0 1 34 60 QQ45 2\n500 0 65535\nS\n"), "{qq}");
+        assert!(qq.contains("\n10 0 1 34 60 QQ45 2\n500 0 -1\nS\n"), "{qq}");
 
         let re = write_file_fmt(&w, 0, VnumFmt::renumber(&w.zones[0], 400));
         let re = String::from_utf8_lossy(&re).into_owned();
         assert!(re.starts_with("#40004\n"), "{re}");
         assert!(re.contains("\n3 40079 a ZZ01 -1 40005 40022\n"), "{re}");
-        assert!(re.contains("\n10 0 1 34 60 40045 2\n500 0 65535\nS\n"), "{re}");
+        assert!(re.contains("\n10 0 1 34 60 40045 2\n500 0 -1\nS\n"), "{re}");
     }
 
 }

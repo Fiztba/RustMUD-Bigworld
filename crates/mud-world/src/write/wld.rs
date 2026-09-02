@@ -9,6 +9,7 @@ use mud_data::types::{MAX_STRING_LENGTH, NOTHING, NOWHERE};
 
 use crate::model::World;
 use crate::write::{push_int, VnumFmt};
+use mud_data::types::Idx;
 
 /// DIR_COUNT with CONFIG_DIAGONAL_DIRS = NO:
 /// only D0-D5 are ever written, whatever dir_option holds.
@@ -36,16 +37,16 @@ fn push_stripped(out: &mut Vec<u8>, s: &[u8]) {
     out.extend(s.iter().copied().filter(|&b| b != b'\r'));
 }
 
-pub fn write_file(world: &World, zone_rnum: u16) -> Vec<u8> {
+pub fn write_file(world: &World, zone_rnum: Idx) -> Vec<u8> {
     write_file_fmt(world, zone_rnum, VnumFmt::Plain)
 }
 
-pub fn write_file_fmt(world: &World, zone_rnum: u16, fmt: VnumFmt) -> Vec<u8> {
+pub fn write_file_fmt(world: &World, zone_rnum: Idx, fmt: VnumFmt) -> Vec<u8> {
     let zone = &world.zones[zone_rnum as usize];
     let mut out = Vec::new();
 
     for i in zone.bot as i32..=zone.top as i32 {
-        let Some(rnum) = world.real_room(i as u16) else { continue };
+        let Some(rnum) = world.real_room(i as Idx) else { continue };
         let room = &world.rooms[rnum as usize];
 
         // Header: vnum, name, description, then the six numeric fields.
@@ -164,7 +165,7 @@ mod tests {
     }
 
     fn add_room(w: &mut World, room: Room) {
-        let rnum = w.rooms.len() as u16;
+        let rnum = w.rooms.len() as Idx;
         w.room_map.insert(room.vnum, rnum);
         w.rooms.push(room);
     }
@@ -359,7 +360,7 @@ mod golden_tests {
     use std::fs;
     use std::path::{Path, PathBuf};
 
-    use mud_data::types::NOWHERE;
+    use mud_data::types::{Idx, NOWHERE};
 
     use crate::lex::Reader;
     use crate::model::{Trigger, World};
@@ -396,13 +397,13 @@ mod golden_tests {
                     r.get_line_sized(49152); // attach_type / flags / narg line
                     r.fread_string("trig arg").expect("trig arglist");
                     r.fread_string("trig body").expect("trig body");
-                    let rnum = world.triggers.len() as u16;
+                    let rnum = world.triggers.len() as Idx;
                     world.triggers.push(Trigger {
-                        vnum: vnum as u16,
+                        vnum: vnum as Idx,
                         name,
                         ..Default::default()
                     });
-                    world.trig_map.entry(vnum as u16).or_insert(rnum);
+                    world.trig_map.entry(vnum as Idx).or_insert(rnum);
                 }
                 _ => panic!("bad trg line: {:?}", String::from_utf8_lossy(&line)),
             }

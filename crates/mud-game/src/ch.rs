@@ -148,8 +148,8 @@ impl Default for PlayerSpecials {
     }
 }
 
-/// last_tell starts at NOBODY (65535); tells compare against idnums.
-pub const NOBODY_TELL: i64 = 65535;
+/// last_tell starts at NOBODY; tells compare against idnums.
+pub const NOBODY_TELL: i64 = mud_data::types::NOBODY as i64;
 
 /// NPC-only data (`mob_special_data`).
 #[derive(Debug, Clone, Default)]
@@ -177,7 +177,7 @@ pub struct MobSpecials {
 /// The runtime character.
 #[derive(Debug, Clone)]
 pub struct Char {
-    /// Prototype rnum; NOBODY (u16::MAX) for PCs.
+    /// Prototype rnum; NOBODY (Idx::MAX) for PCs.
     pub mob_rnum: Idx,
     /// PC: player name (capitalized). NPC: keyword list.
     pub name: Option<BStr>,

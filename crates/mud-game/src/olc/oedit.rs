@@ -118,7 +118,7 @@ pub fn do_oasis_oedit(g: &mut Game, chid: CharId, argument: &[u8], _cmd: usize, 
     if number == NOWHERE as i32 {
         number = atoi(&buf1);
     }
-    if number < 0 || number > u16::MAX as i32 {
+    if number < 0 {
         send_to_char(g, chid, b"That object VNUM can't exist.\r\n");
         return;
     }
@@ -1347,7 +1347,7 @@ pub fn oedit_parse(
         }
 
         OEDIT_COPY => {
-            match g.world.real_object(atoi(&arg).clamp(0, u16::MAX as i32) as Idx) {
+            match g.world.real_object(atoi(&arg).max(0) as Idx) {
                 Some(number) => oedit_setup_existing(g, &mut olc, number as usize),
                 None => write_to_desc(g, di, b"That object does not exist.\r\n"),
             }

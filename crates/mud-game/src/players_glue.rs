@@ -310,7 +310,7 @@ pub fn load_char_into(g: &mut Game, chid: CharId, name: &[u8]) -> Option<usize> 
             ps.wimp_level = pf.wimpy;
             ps.freeze_level = pf.freeze_level.clamp(-128, 127) as i8;
             ps.invis_level = pf.invis_level.clamp(-32768, 32767) as i16;
-            ps.load_room = pf.load_room.clamp(0, 65535) as Idx;
+            ps.load_room = pf.load_room as Idx;
             ps.bad_pws = pf.bad_pws.clamp(0, 255) as u8;
             ps.practices = pf.practices;
             ps.conditions[HUNGER] = pf.hunger as i16;
@@ -321,7 +321,7 @@ pub fn load_char_into(g: &mut Game, chid: CharId, name: &[u8]) -> Option<usize> 
             ps.screen_width = pf.screen_width;
             ps.questpoints = pf.questpoints;
             ps.quest_counter = pf.quest_counter;
-            ps.current_quest = pf.current_quest.clamp(0, 65535) as Idx;
+            ps.current_quest = pf.current_quest as Idx;
             ps.num_completed_quests = pf.completed_quests.len() as i32;
             ps.completed_quests = pf.completed_quests.clone();
             ps.pref = FlagSet::from_words(pf.prf_flags);

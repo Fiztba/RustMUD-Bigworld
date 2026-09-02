@@ -5,12 +5,13 @@
 //! when the vnum does not resolve.
 
 use mud_data::flags::{EX_HIDDEN, EX_ISDOOR, EX_PICKPROOF};
-use mud_data::types::{NOTHING, NOWHERE};
+use mud_data::types::{is_nil_vnum, NOTHING, NOWHERE};
 
 use crate::lex::{asciiflag_conv, atol, Reader};
 use crate::model::{Exit, ExtraDesc, Room, World};
 
 use super::zon::{is_ws, Scan};
+use mud_data::types::Idx;
 
 /// `diagonal_dirs = NO`, and the reference lib/ ships no
 /// etc/config to override it — so DIR_COUNT is 6 and setup_dir refuses
@@ -68,8 +69,11 @@ pub fn parse_file(world: &mut World, data: &[u8], filename: &str) -> Result<(), 
                         return Err(format!("SYSERR: Format error after world #{last}"));
                     }
                 };
-                if nr >= 99999 {
-                    return Ok(()); // acts like '$'
+                // Vnums index the world tables, so they may not be negative. A
+                // file that ends on a record rather than on '$' is a format
+                // error, caught at the top of the loop.
+                if nr < 0 {
+                    return Err(format!("SYSERR: Negative world vnum #{nr} in {filename}."));
                 }
                 pending = parse_room(world, &mut r, nr as i32)?;
             }
@@ -119,8 +123,8 @@ fn parse_room(
     // attaches to the next zone, exactly as does.
 
     let mut room = Room {
-        vnum: virtual_nr as u16, // int → ush_int store truncates
-        zone: zone as u16,
+        vnum: virtual_nr as Idx, // int → ush_int store truncates
+        zone: zone as Idx,
         ..Default::default()
     };
     room.name = r.fread_string(&buf2)?;
@@ -228,7 +232,7 @@ fn parse_room(
                         break;
                     }
                 }
-                let rnum = world.rooms.len() as u16;
+                let rnum = world.rooms.len() as Idx;
                 // On a duplicate vnum the map keeps the first room,
                 // deterministically. The shipped world has none.
                 world.room_map.entry(room.vnum).or_insert(rnum);
@@ -285,7 +289,7 @@ fn setup_dir(r: &mut Reader, room: &mut Room, dir: i32) -> Result<(), String> {
         exit_info,
         // key -1 or 65535 ⇒ NOTHING; other values truncate through
         // obj_vnum (unsigned short), key 0 is real.
-        key: if t1 == -1 || t1 == 65535 { NOTHING } else { t1 as u16 },
+        key: if is_nil_vnum(t1) { NOTHING } else { t1 as Idx },
         // to_room 0 or -1 ⇒ NOWHERE. The raw vnum is kept separately and
         // boot's renum pass resolves it.
         to_room_vnum: t2 as i32,
@@ -304,7 +308,7 @@ fn dg_read_trigger(world: &World, room: &mut Room, line: &[u8]) {
     let (Some(_), Some(vnum)) = (junk, vnum) else {
         return; // count != 2
     };
-    let vnum = vnum as u16; // int → trig_vnum truncates
+    let vnum = vnum as Idx; // int → trig_vnum truncates
     if world.real_trigger(vnum).is_none() {
         return; // "Trigger vnum #%d asked for but non-existant!" — dropped
     }
@@ -319,7 +323,7 @@ mod tests {
     /// One zone covering 0..=99 plus one covering 3000..=3099.
     fn world_with_zones() -> World {
         let mut w = World::default();
-        for (number, bot, top) in [(0u16, 0u16, 99u16), (30, 3000, 3099)] {
+        for (number, bot, top) in [(0u32, 0u32, 99u32), (30, 3000, 3099)] {
             w.zones.push(crate::model::Zone {
                 number,
                 bot,
@@ -372,7 +376,7 @@ mod tests {
             (0, &b"0 -1 3054"[..]),   // plain exit, no key
             (1, b"2 65535 0"),        // pickproof, key sentinel, to_room 0
             (2, b"3 0 -1"),           // hidden, key 0 is real, to_room -1
-            (3, b"4 70000 70000"),    // all bits, key wraps through u16
+            (3, b"4 70000 70000"),    // all bits, key above the old 16-bit range
             (4, b"7 5 5"),            // out-of-range flag → 0
         ] {
             data.extend_from_slice(format!("D{d}\n~\n~\n").as_bytes());
@@ -394,7 +398,7 @@ mod tests {
         );
         assert_eq!(
             (ex(3).exit_info, ex(3).key, ex(3).to_room_vnum),
-            (EX_ISDOOR | EX_PICKPROOF | EX_HIDDEN, 4464, 70000)
+            (EX_ISDOOR | EX_PICKPROOF | EX_HIDDEN, 70000, 70000)
         );
         assert_eq!((ex(4).exit_info, ex(4).key), (0, 5));
     }
@@ -506,10 +510,9 @@ mod tests {
     }
 
     #[test]
-    fn vnum_99999_terminates_like_dollar() {
+    fn vnum_99999_is_a_record_not_eof() {
         let mut w = world_with_zones();
-        parse_into(&mut w, b"#1\n~\n~\n0 0 0 0 0 0\nS\n#99999\nnot a room\n").unwrap();
-        assert_eq!(w.rooms.len(), 1);
+        assert!(parse_into(&mut w, b"#1\n~\n~\n0 0 0 0 0 0\nS\n#99999\nnot a room\n").is_err());
     }
 
     #[test]

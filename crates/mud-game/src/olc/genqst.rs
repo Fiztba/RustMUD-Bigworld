@@ -103,7 +103,7 @@ pub fn add_quest(g: &mut Game, nqst: &Quest, func: Option<MobSpec>) -> usize {
 /// real_mobile over a questmaster vnum, which is `NOBODY` when unset and
 /// can hold a raw -1 from the editor's "-1 for none" prompts.
 fn qm_rnum(g: &Game, qm: i32) -> Option<usize> {
-    if !(0..=u16::MAX as i32).contains(&qm) {
+    if qm < 0 {
         return None;
     }
     g.world.real_mobile(qm as Idx).map(|r| r as usize)

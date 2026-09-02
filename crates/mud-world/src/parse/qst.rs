@@ -2,14 +2,16 @@
 //!
 //! Five tilde strings (name/desc/info/done/quit), then three numeric lines
 //! whose field counts are enforced exactly (7, 7, 3 -- anything else is
-//! fatal), then lines are consumed until one starts with 'S'. The u16
-//! Vnum fields are stored as u16, so -1 becomes 65535 for target/prereq/
+//! fatal), then lines are consumed until one starts with 'S'. The Idx
+//! Vnum fields are stored as vnums, so -1 becomes NOTHING for target/prereq/
 //! prev/next/obj_reward, the questmaster keeps its vnum only when
 //! real_mobile finds it (else NOBODY), and vnum-typed values truncate.
 
 use super::trg::{scan_after_hash, scan_int, scan_word};
+use mud_data::types::{is_nil_vnum, NOBODY, NOTHING};
 use crate::lex::{Reader, asciiflag_conv};
 use crate::model::{Quest, World};
+use mud_data::types::Idx;
 
 /// The .qst record loop — the same shape as the .trg loop.
 pub fn parse_file(world: &mut World, data: &[u8], filename: &str) -> Result<(), String> {
@@ -39,8 +41,10 @@ pub fn parse_file(world: &mut World, data: &[u8], filename: &str) -> Result<(), 
                 Some(v) => v,
                 None => return Err(format!("Format error after qst #{last}")),
             };
-            if nr >= 99999 {
-                return Ok(());
+            // Vnums index the world tables, so they may not be negative. A file
+            // that ends on a record rather than on '$' is a format error.
+            if nr < 0 {
+                return Err(format!("SYSERR: Negative qst vnum #{nr} in {filename}."));
             }
             parse_quest(world, &mut r, nr)?;
         } else {
@@ -86,19 +90,18 @@ fn parse_quest(world: &mut World, r: &mut Reader, nr: i32) -> Result<(), String>
 
     let type_ = t0;
     // qm = (real_mobile(t[1]) == NOBODY) ? NOBODY: t[1] — both the lookup
-    // argument and the stored mob_vnum are u16-truncated.
-    let qm_vnum = if world.mob_map.contains_key(&(t1 as u16)) {
-        (t1 as u16) as i32
+    // argument and the stored mob_vnum are vnum stores.
+    let qm_vnum = if world.mob_map.contains_key(&(t1 as Idx)) {
+        (t1 as Idx) as i32
     } else {
-        65535
+        NOBODY as i32
     };
     let flags = asciiflag_conv(&f1);
-    // target is a plain int: only -1 becomes NOTHING, other values kept.
-    let target = if t2 == -1 { 65535 } else { t2 };
-    // prev/next (qst_vnum) and prereq (obj_vnum) are u16 stores.
-    let prev_quest = if t3 == -1 { 65535 } else { (t3 as u16) as i32 };
-    let next_quest = if t4 == -1 { 65535 } else { (t4 as u16) as i32 };
-    let prereq = if t5 == -1 { 65535 } else { (t5 as u16) as i32 };
+    // "Nothing" is -1 in the file, or 65535 from a 16-bit build.
+    let target = if is_nil_vnum(t2) { NOTHING as i32 } else { t2 };
+    let prev_quest = if is_nil_vnum(t3) { NOTHING as i32 } else { (t3 as Idx) as i32 };
+    let next_quest = if is_nil_vnum(t4) { NOTHING as i32 } else { (t4 as Idx) as i32 };
+    let prereq = if is_nil_vnum(t5) { NOTHING as i32 } else { (t5 as Idx) as i32 };
 
     // Seven raw ints into value[0..6]: points, penalty, min level, max
     // level, time limit, return-mob (obj_in), quantity (obj_out).
@@ -132,9 +135,9 @@ fn parse_quest(world: &mut World, r: &mut Reader, nr: i32) -> Result<(), String>
             String::from_utf8_lossy(&line)
         ));
     };
-    // obj_reward is an obj_vnum (u16): -1 becomes NOTHING = 65535, which
-    // the writer prints back raw.
-    let obj_reward = if obj == -1 { 65535 } else { (obj as u16) as i32 };
+    // obj_reward is an obj_vnum: "nothing" becomes NOTHING, which the
+    // writer prints back as -1.
+    let obj_reward = if is_nil_vnum(obj) { NOTHING as i32 } else { (obj as Idx) as i32 };
 
     // Consume lines until one starts with 'S'; everything else (even '$')
     // is silently skipped. EOF here is fatal.
@@ -146,7 +149,7 @@ fn parse_quest(world: &mut World, r: &mut Reader, nr: i32) -> Result<(), String>
     }
 
     world.quests.push(Quest {
-        vnum: nr as u16,
+        vnum: nr as Idx,
         qm_vnum,
         flags,
         type_,
@@ -194,21 +197,21 @@ mod tests {
         assert_eq!(q.qm_vnum, 179);
         assert_eq!(q.flags, 0);
         assert_eq!(q.target, 194);
-        assert_eq!(q.prev_quest, 65535);
-        assert_eq!(q.next_quest, 65535);
-        assert_eq!(q.prereq, 65535);
+        assert_eq!(q.prev_quest, -1);
+        assert_eq!(q.next_quest, -1);
+        assert_eq!(q.prereq, -1);
         assert_eq!(
             (q.value, q.penalty, q.min_level, q.max_level, q.time, q.obj_in, q.obj_out),
             (0, 0, 1, 34, 60, -1, 3)
         );
-        assert_eq!((q.gold_reward, q.exp_reward, q.obj_reward), (10, 0, 65535));
+        assert_eq!((q.gold_reward, q.exp_reward, q.obj_reward), (10, 0, -1));
     }
 
     #[test]
     fn unknown_questmaster_becomes_nobody() {
         let mut w = World::default();
         parse_file(&mut w, STOCK, "1.qst").expect("parse");
-        assert_eq!(w.quests[0].qm_vnum, 65535);
+        assert_eq!(w.quests[0].qm_vnum, -1);
     }
 
     #[test]
@@ -218,9 +221,9 @@ mod tests {
         parse_file(&mut w, data, "t.qst").expect("parse");
         let q = &w.quests[0];
         assert_eq!(q.flags, 0b11); // 'ab'
-        assert_eq!(q.target, 65535); // -1 => NOTHING
+        assert_eq!(q.target, -1); // -1 => NOTHING
         assert_eq!((q.prev_quest, q.next_quest, q.prereq), (2, 3, 4));
-        assert_eq!(q.obj_reward, 65535);
+        assert_eq!(q.obj_reward, -1);
         assert_eq!((q.value, q.penalty, q.min_level, q.max_level), (1, 2, 3, 4));
         assert_eq!((q.time, q.obj_in, q.obj_out), (5, 6, 7));
     }

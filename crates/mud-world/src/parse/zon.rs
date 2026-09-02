@@ -7,6 +7,7 @@
 
 use crate::lex::{asciiflag_conv, atol, parse_at, Reader};
 use crate::model::{World, Zone, ZoneCommand};
+use mud_data::types::Idx;
 
 /// A cursor over one line. Each read resumes exactly where the last one
 /// stopped, which can be mid-token after a partial numeric match -- the
@@ -133,7 +134,7 @@ pub fn parse_file(world: &mut World, data: &[u8], filename: &str) -> Result<(), 
         return Err(format!("SYSERR: Format error in {zname}, line {line_num}"));
     }
     z.number = match Scan::new(&buf[1..]).int() {
-        Some(v) => v as i16 as u16,
+        Some(v) => v as Idx,
         None => return Err(format!("SYSERR: Format error in {zname}, line {line_num}")),
     };
 
@@ -325,7 +326,7 @@ pub fn parse_file(world: &mut World, data: &[u8], filename: &str) -> Result<(), 
 #[allow(clippy::type_complexity)]
 fn scan_header10(
     line: &[u8],
-) -> Option<(u16, u16, i32, i32, [Vec<u8>; 4], i32, i32)> {
+) -> Option<(Idx, Idx, i32, i32, [Vec<u8>; 4], i32, i32)> {
     let mut sc = Scan::new(line);
     let bot = sc.int()?;
     let top = sc.int()?;
@@ -338,8 +339,8 @@ fn scan_header10(
     let min = sc.int()?;
     let max = sc.int()?;
     Some((
-        bot as i16 as u16,
-        top as i16 as u16,
+        bot as Idx,
+        top as Idx,
         life as i32,
         reset as i32,
         [f1, f2, f3, f4],
@@ -349,13 +350,13 @@ fn scan_header10(
 }
 
 /// " %hd %hd %d %d " (2154).
-fn scan_header4(line: &[u8]) -> Option<(u16, u16, i32, i32)> {
+fn scan_header4(line: &[u8]) -> Option<(Idx, Idx, i32, i32)> {
     let mut sc = Scan::new(line);
     let bot = sc.int()?;
     let top = sc.int()?;
     let life = sc.int()?;
     let reset = sc.int()?;
-    Some((bot as i16 as u16, top as i16 as u16, life as i32, reset as i32))
+    Some((bot as Idx, top as Idx, life as i32, reset as i32))
 }
 
 #[cfg(test)]

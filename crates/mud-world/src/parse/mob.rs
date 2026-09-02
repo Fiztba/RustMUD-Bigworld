@@ -188,8 +188,10 @@ pub fn parse_file(world: &mut World, data: &[u8], filename: &str) -> Result<(), 
             let last = nr;
             nr = parse_hash_vnum(&line)
                 .ok_or_else(|| format!("SYSERR: Format error after mob #{last}"))?;
-            if nr >= 99999 {
-                return Ok(());
+            // Vnums index the world tables, so they may not be negative. A file
+            // that ends on a record rather than on '$' is a format error.
+            if nr < 0 {
+                return Err(format!("SYSERR: Negative mob vnum #{nr} in {filename}."));
             }
             pending = parse_mobile(world, &mut r, nr)?;
         } else {
@@ -623,13 +625,13 @@ mod tests {
     }
 
     #[test]
-    fn vnum_99999_and_dollar_both_terminate() {
+    fn vnum_99999_is_a_record_not_eof() {
         let mut data = Vec::new();
         data.extend_from_slice(b"#1\na~\na~\na\n~\na\n~\n0 0 0 0 0 0 0 0 0 E\n");
         data.extend_from_slice(SIMPLE_TAIL);
         data.extend_from_slice(b"E\n#99999\njunk that would not parse\n");
-        let w = parse(&data);
-        assert_eq!(w.mob_protos.len(), 1);
+        let mut w = World::default();
+        assert!(parse_file(&mut w, &data, "t.mob").is_err());
     }
 
     #[test]

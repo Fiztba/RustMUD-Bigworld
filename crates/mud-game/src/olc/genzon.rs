@@ -32,18 +32,22 @@ pub fn create_new_zone(
     vzone_num: i32,
     bottom: i32,
     top: i32,
-) -> Result<ZoneRnum, &'static str> {
-    // CIRCLE_UNSIGNED_INDEX limits.
-    if vzone_num == NOWHERE as i32 {
-        return Err("You can't make negative zones.\r\n");
-    } else if vzone_num > 655 {
-        return Err("New zone cannot be higher than 655.\r\n");
-    } else if bottom > top {
-        return Err("Bottom room cannot be greater than top room.\r\n");
-    } else if bottom <= 0 {
-        return Err("Bottom room cannot be less then 0.\r\n");
-    } else if top >= u16::MAX as i32 {
-        return Err("Top greater than IDXTYPE_MAX. (Commonly 65535)\r\n");
+) -> Result<ZoneRnum, String> {
+    // A zone owns a hundred vnums by convention, so the highest zone that
+    // can be addressed is the one whose hundredth vnum still fits. The
+    // arguments arrive as ints and are compared as the unsigned index type,
+    // as the C does, so a negative number reads as a huge one.
+    let max_zone = (MAX_VNUM - 99) / 100;
+    if vzone_num as Idx == NOWHERE {
+        return Err("You can't make negative zones.\r\n".to_string());
+    } else if vzone_num as Idx > max_zone {
+        return Err(format!("New zone cannot be higher than {}.\r\n", max_zone));
+    } else if bottom as Idx > top as Idx {
+        return Err("Bottom room cannot be greater than top room.\r\n".to_string());
+    } else if bottom as Idx == 0 {
+        return Err("Bottom room cannot be less than 0.\r\n".to_string());
+    } else if top as Idx > MAX_VNUM {
+        return Err(format!("Top room cannot be greater than {}.\r\n", MAX_VNUM));
     }
 
     // The loop covers every zone, including the one with the highest
@@ -51,7 +55,7 @@ pub fn create_new_zone(
     // `zedit new <that vnum>` would produce a duplicate.
     for z in g.world.zones.iter() {
         if z.number as i32 == vzone_num {
-            return Err("That virtual zone already exists.\r\n");
+            return Err("That virtual zone already exists.\r\n".to_string());
         }
     }
 
@@ -78,7 +82,7 @@ pub fn create_new_zone(
             };
             let msg = format!("SYSERR: OLC: Can't write new {}.", what.0);
             g.mudlog(MudlogKind::Brf, LVL_IMPL, true, &msg);
-            return Err(what.1);
+            return Err(what.1.to_string());
         }
     }
 
@@ -105,7 +109,7 @@ pub fn create_new_zone(
                 if let Some(room) = g.world.real_room(v) {
                     g.world.rooms[room as usize].zone += 1;
                 }
-                if v == u16::MAX {
+                if v == Idx::MAX {
                     break;
                 }
             }

@@ -56,7 +56,7 @@ fn trig_marker(g: &Game, go: crate::dg::GoId, trailing_space: bool) -> BStr {
 }
 
 fn obj_vnum(g: &Game, oid: ObjId) -> i32 {
-    // GET_OBJ_VNUM: NOTHING (65535) for unique objects like corpses.
+    // GET_OBJ_VNUM: NOTHING (-1 through %d) for unique objects like corpses.
     let rnum = g.obj(oid).item_number;
     if rnum != NOTHING {
         g.world.obj_protos.get(rnum as usize).map(|p| p.vnum as i32).unwrap_or(NOTHING as i32)

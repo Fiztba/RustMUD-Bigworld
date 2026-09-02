@@ -120,7 +120,7 @@ pub fn do_oasis_medit(g: &mut Game, chid: CharId, argument: &[u8], _cmd: usize, 
     if number == NOBODY as i32 {
         number = atoi(&buf1);
     }
-    if number < 0 || number > u16::MAX as i32 {
+    if number < 0 {
         send_to_char(g, chid, b"That mobile VNUM can't exist.\r\n");
         return;
     }
@@ -1098,7 +1098,7 @@ pub fn medit_parse(
         }
 
         MEDIT_COPY => {
-            match g.world.real_mobile(atoi(&arg).clamp(0, u16::MAX as i32) as Idx) {
+            match g.world.real_mobile(atoi(&arg).max(0) as Idx) {
                 Some(r) => medit_setup_existing(g, &mut olc, r as usize),
                 None => write_to_desc(g, di, b"That mob does not exist.\r\n"),
             }

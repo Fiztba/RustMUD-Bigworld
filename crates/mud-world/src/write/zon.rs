@@ -13,6 +13,7 @@ use crate::model::World;
 
 use super::wld::parse_tab;
 use super::{push_int, sprintascii, VnumFmt};
+use mud_data::types::Idx;
 
 /// One numeric argument of a reset command. Which of the four columns is a
 /// vnum depends on the command letter ('s quick-reference
@@ -48,11 +49,11 @@ fn nonempty(s: &Option<Vec<u8>>) -> Option<&[u8]> {
     }
 }
 
-pub fn write_file(world: &World, zone_rnum: u16) -> Vec<u8> {
+pub fn write_file(world: &World, zone_rnum: Idx) -> Vec<u8> {
     write_file_fmt(world, zone_rnum, VnumFmt::Plain)
 }
 
-pub fn write_file_fmt(world: &World, zone_rnum: u16, fmt: VnumFmt) -> Vec<u8> {
+pub fn write_file_fmt(world: &World, zone_rnum: Idx, fmt: VnumFmt) -> Vec<u8> {
     let z = &world.zones[zone_rnum as usize];
     let mut out = Vec::new();
 

@@ -243,7 +243,7 @@ pub fn save_mobiles(g: &mut Game, rznum: Option<usize>) -> bool {
         if let Some(rmob) = g.world.real_mobile(i) {
             check_mobile_strings(g, rmob as usize);
         }
-        if i == u16::MAX {
+        if i == Idx::MAX {
             break;
         }
     }

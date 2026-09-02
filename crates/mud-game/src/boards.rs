@@ -526,7 +526,7 @@ fn board_display_msg(
     if slot < 0 || slot as usize >= INDEX_SIZE {
         send_to_char(g, chid, b"Sorry, the board is not working.\r\n");
         let room = g.ch(chid).in_room;
-        let vnum = if room == NOWHERE { NOWHERE as u16 } else { g.world.rooms[room as usize].vnum };
+        let vnum = if room == NOWHERE { NOWHERE as Idx } else { g.world.rooms[room as usize].vnum };
         g.log(format!("SYSERR: Board is screwed up. (Room #{})", vnum));
         return true;
     }
@@ -588,7 +588,7 @@ fn board_remove_msg(g: &mut Game, board: usize, chid: CharId, arg: &[u8]) -> boo
     if slot < 0 || slot as usize >= INDEX_SIZE {
         send_to_char(g, chid, b"That message is majorly screwed up.\r\n");
         let room = g.ch(chid).in_room;
-        let vnum = if room == NOWHERE { NOWHERE as u16 } else { g.world.rooms[room as usize].vnum };
+        let vnum = if room == NOWHERE { NOWHERE as Idx } else { g.world.rooms[room as usize].vnum };
         g.log(format!("SYSERR: The board is seriously screwed up. (Room #{})", vnum));
         return true;
     }

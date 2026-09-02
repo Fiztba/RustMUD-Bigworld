@@ -57,17 +57,17 @@ pub fn do_oasis_copy(g: &mut Game, chid: CharId, argument: &[u8], _cmd: usize, s
         return;
     }
 
-    let lookup = |g: &Game, vnum: i32| -> Option<u16> {
-        if !(0..=65535).contains(&vnum) {
+    let lookup = |g: &Game, vnum: i32| -> Option<Idx> {
+        if vnum < 0 {
             return None;
         }
-        let v = vnum as u16;
+        let v = vnum as Idx;
         match subcmd {
             s if s == ConState::Redit as i32 => g.world.real_room(v),
             s if s == ConState::Oedit as i32 => g.world.real_object(v),
             s if s == ConState::Medit as i32 => g.world.real_mobile(v),
             s if s == ConState::Sedit as i32 => {
-                g.world.shops.iter().position(|sh| sh.vnum == v).map(|i| i as u16)
+                g.world.shops.iter().position(|sh| sh.vnum == v).map(|i| i as Idx)
             }
             _ => g.world.real_trigger(v),
         }
@@ -187,7 +187,7 @@ pub fn do_dig(g: &mut Game, chid: CharId, argument: &[u8], _cmd: usize, _subcmd:
 
     let rawvnum = atoi(&sroom);
     // (room_vnum)rawvnum: the cast truncates, and -1 becomes NOWHERE.
-    let rvnum: u16 = if rawvnum == -1 { NOWHERE } else { rawvnum as u16 };
+    let rvnum: Idx = if rawvnum == -1 { NOWHERE } else { rawvnum as Idx };
     let mut rrnum = g.world.real_room(rvnum).unwrap_or(NOWHERE);
     let dir = search_block(&sdir, &DIRS);
     let room = g.ch(chid).in_room;
@@ -335,7 +335,7 @@ pub fn do_dig(g: &mut Game, chid: CharId, argument: &[u8], _cmd: usize, _subcmd:
 }
 
 /// redit_find_new_vnum: the next free vnum in a zone.
-fn redit_find_new_vnum(g: &Game, zone: usize) -> u16 {
+fn redit_find_new_vnum(g: &Game, zone: usize) -> Idx {
     let mut vnum = g.world.zones[zone].bot;
     let Some(mut rnum) = g.world.real_room(vnum) else { return vnum };
     loop {

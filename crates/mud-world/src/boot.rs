@@ -10,6 +10,7 @@ use mud_data::types::NOWHERE;
 use crate::lex::Reader;
 use crate::model::World;
 use crate::parse;
+use mud_data::types::{is_nil_vnum, Idx};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BootMode {
@@ -82,9 +83,9 @@ fn renum_world(world: &mut World) {
             if door.to_room != NOWHERE {
                 continue; // already NOWHERE from parse (0 / -1)
             }
-            if door.to_room_vnum > 0 && door.to_room_vnum < 65535 {
+            if door.to_room_vnum > 0 && !is_nil_vnum(door.to_room_vnum) {
                 door.to_room = map
-                    .get(&(door.to_room_vnum as u16))
+                    .get(&(door.to_room_vnum as Idx))
                     .copied()
                     .unwrap_or(NOWHERE);
             }
@@ -101,9 +102,9 @@ fn renum_zone_table(world: &mut World) -> Vec<String> {
     let obj_map = world.obj_map.clone();
     let trig_map = world.trig_map.clone();
     let real =
-        |map: &std::collections::HashMap<u16, u16>, v: i32| -> i32 {
-            if (0..65535).contains(&v) {
-                map.get(&(v as u16)).map(|&r| r as i32).unwrap_or(NOWHERE as i32)
+        |map: &std::collections::HashMap<Idx, Idx>, v: i32| -> i32 {
+            if v >= 0 && !is_nil_vnum(v) {
+                map.get(&(v as Idx)).map(|&r| r as i32).unwrap_or(NOWHERE as i32)
             } else {
                 NOWHERE as i32
             }

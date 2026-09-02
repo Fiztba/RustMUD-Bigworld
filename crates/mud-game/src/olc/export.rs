@@ -93,7 +93,7 @@ fn survey(g: &Game, zone_rnum: usize, fmt: VnumFmt) -> Findings {
         for (dir, slot) in room.dir_option.iter().enumerate().take(dirs) {
             let Some(ex) = slot else { continue };
             if ex.key != NOTHING && !fmt.in_zone(i64::from(ex.key)) {
-                f.keys.push((vnum, dir, i32::from(ex.key)));
+                f.keys.push((vnum, dir, ex.key as i32));
             }
             if ex.to_room == NOWHERE {
                 continue;
@@ -114,13 +114,13 @@ fn survey(g: &Game, zone_rnum: usize, fmt: VnumFmt) -> Findings {
                 f.products.push((shop.vnum, p));
             }
         }
-        for &r in shop.in_rooms.iter().take_while(|&&r| r != 65535) {
+        for &r in shop.in_rooms.iter().take_while(|&&r| r != NOWHERE as i32) {
             if !fmt.in_zone(i64::from(r)) {
                 f.rooms.push((shop.vnum, r));
             }
         }
         let keeper = shop.keeper_vnum;
-        if g.world.mob_map.contains_key(&(keeper as u16)) && !fmt.in_zone(i64::from(keeper)) {
+        if g.world.mob_map.contains_key(&(keeper as Idx)) && !fmt.in_zone(i64::from(keeper)) {
             f.keepers.push((shop.vnum, keeper));
         }
     }
@@ -264,7 +264,7 @@ pub fn do_export_zone(g: &mut Game, chid: CharId, argument: &[u8], _cmd: usize, 
     let (arg3, _) = one_argument(rest);
 
     let zvnum = mud_world::lex::atol(&arg1);
-    let zone_rnum = match u16::try_from(zvnum).ok().and_then(|v| g.world.real_zone(v)) {
+    let zone_rnum = match Idx::try_from(zvnum).ok().and_then(|v| g.world.real_zone(v)) {
         Some(zr) => zr as usize,
         None => {
             send_to_char(g, chid, b"Export which zone?\r\n");
@@ -296,7 +296,7 @@ pub fn do_export_zone(g: &mut Game, chid: CharId, argument: &[u8], _cmd: usize, 
 
     // The ceiling is the highest vnum that fits in an `Idx`, and not `Idx::MAX`
     // itself, which is NOWHERE and NOTHING. Nothing on the load path
-    // range-checks a vnum — the room parser truncates into a `u16` and the zone
+    // range-checks a vnum — the room parser truncates into a `Idx` and the zone
     // header is read the same way — so a target that does not fit yields files
     // that are quietly wrong rather than files that are refused.
     //
@@ -346,7 +346,7 @@ pub fn do_export_zone(g: &mut Game, chid: CharId, argument: &[u8], _cmd: usize, 
         Some(t) => t.to_string(),
         None => "qq".to_string(),
     };
-    let zr = zone_rnum as u16;
+    let zr = zone_rnum as Idx;
     let members = vec![
         Member { name: format!("{stem}.info"), data: info_file(g, zone_rnum, fmt, &findings) },
         Member {

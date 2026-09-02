@@ -549,7 +549,7 @@ fn process_attach(g: &mut Game, ctx: DgCtx, cmd: &[u8]) {
     };
 
     let trig_vnum = atoi32(&trignum_s);
-    let rnum = if !(0..=65535).contains(&trig_vnum) {
+    let rnum = if trig_vnum < 0 {
         None
     } else {
         g.world.trig_map.get(&(trig_vnum as Idx)).copied()

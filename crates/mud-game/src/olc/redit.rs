@@ -96,7 +96,7 @@ pub fn do_oasis_redit(g: &mut Game, chid: CharId, argument: &[u8], _cmd: usize, 
     if number == NOWHERE as i32 {
         number = atoi(&buf1);
     }
-    if number < 0 || number > u16::MAX as i32 {
+    if number < 0 {
         send_to_char(g, chid, b"That room VNUM can't exist.\r\n");
         return;
     }
@@ -949,7 +949,7 @@ pub fn redit_parse(
         REDIT_EXIT_NUMBER => {
             let mut number = atoi(&arg);
             if number != -1 {
-                match g.real_room((number as u16) as i32) {
+                match g.real_room((number as Idx) as i32) {
                     Some(r) => number = r as i32,
                     None => {
                         write_to_desc(g, di, b"That room does not exist, try again : ");
@@ -959,7 +959,7 @@ pub fn redit_parse(
             }
             let dir = olc.value as usize;
             if let Some(ex) = olc.room.as_mut().unwrap().dir_option[dir].as_mut() {
-                ex.to_room = number as u16;
+                ex.to_room = number as Idx;
             }
             redit_disp_exit_menu(g, di, &mut olc);
             return Some(olc);
@@ -988,7 +988,7 @@ pub fn redit_parse(
             let number = atoi(&arg);
             let dir = olc.value as usize;
             if let Some(ex) = olc.room.as_mut().unwrap().dir_option[dir].as_mut() {
-                ex.key = if number < 0 { NOTHING } else { number as u16 };
+                ex.key = if number < 0 { NOTHING } else { number as Idx };
             }
             redit_disp_exit_menu(g, di, &mut olc);
             return Some(olc);

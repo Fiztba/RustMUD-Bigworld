@@ -696,9 +696,8 @@ pub fn trig_vnum(g: &Game, go: GoId, iid: u64) -> i32 {
     g.trig(go, iid).map_or(0, |t| g.world.triggers[t.nr as usize].vnum as i32)
 }
 
-/// GET_MOB_VNUM: with CIRCLE_UNSIGNED_INDEX, a PC (or a mob
-/// with no rnum) reports NOBODY = 65535 — NOT -1. Scripts compare against
-/// the promoted unsigned value (the findmob PC idiom is 65535).
+/// GET_MOB_VNUM: a PC (or a mob with no rnum) reports NOBODY, which %d
+/// prints as -1 at this width. Scripts compare against that.
 pub fn mob_vnum(g: &Game, chid: CharId) -> i32 {
     let ch = g.ch(chid);
     if ch.is_npc() && ch.mob_rnum != mud_data::types::NOBODY {
@@ -712,7 +711,7 @@ pub fn mob_vnum(g: &Game, chid: CharId) -> i32 {
 }
 
 /// GET_OBJ_VNUM: unique objects (corpses!) report
-/// NOTHING = 65535 — the shipped fido script tests %item.vnum(65535)%.
+/// NOTHING, printed as -1 — the shipped fido script tests %item.vnum(-1)%.
 pub fn obj_vnum(g: &Game, oid: ObjId) -> i32 {
     let o = g.obj(oid);
     if o.item_number != mud_data::types::NOTHING {

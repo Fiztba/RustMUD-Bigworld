@@ -10,6 +10,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
+use mud_data::types::Idx;
 use mud_world::boot;
 use mud_world::write;
 
@@ -64,7 +65,7 @@ fn main() -> ExitCode {
     let mut failures = 0u32;
     let mut expected_hits = 0u32;
     if out_dir.is_some() || reference_dir.is_some() {
-        let writers: &[(&str, fn(&mud_world::model::World, u16) -> Vec<u8>)] = &[
+        let writers: &[(&str, fn(&mud_world::model::World, Idx) -> Vec<u8>)] = &[
             ("wld", write::wld::write_file),
             ("mob", write::mob::write_file),
             ("obj", write::obj::write_file),
@@ -75,7 +76,7 @@ fn main() -> ExitCode {
         ];
         for (zr, zone) in world.zones.iter().enumerate() {
             for (ext, wf) in writers {
-                let bytes = wf(world, zr as u16);
+                let bytes = wf(world, zr as Idx);
                 let rel = format!("{ext}/{}.{ext}", zone.number);
                 if let Some(out) = &out_dir {
                     let p = out.join(&rel);

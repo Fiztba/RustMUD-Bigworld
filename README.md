@@ -1,4 +1,4 @@
-# RustMUD
+# RustMUD-Bigworld
 
 A complete rewrite of [tbaMUD](https://github.com/tbamud/tbamud) in Rust. What a
 player sees is the same game: every command, every admin command, all of OLC, DG
@@ -7,6 +7,52 @@ observable. Genuine bugs in the original are fixed here and sent upstream rather
 than reproduced.
 
 If you have run tbaMUD, you already know how to run this.
+
+## Large world
+
+This is RustMUD with two deliberate differences, the same two that
+[tbamud-bigworld](https://github.com/Fiztba/tbamud-bigworld) makes to the C.
+
+**Vnums are 32 bits wide.** Rooms, objects, mobs, zones, shops, triggers and
+quests were capped at 65,534 of each; the type now holds 4,294,967,294, and
+`zedit new` will make zones up to 42,949,671. In practice anything typed at a
+prompt or read from a world file passes through an int, so 2,147,483,647 is
+the working ceiling, which is still thirty-two thousand times the old one.
+
+**A vnum of "nothing" is -1.** A corpse, or any object with no prototype, used
+to answer `%obj.vnum%` with 65535, and 65535 sat in world, rent and player
+files wherever "nothing" was stored. It is -1 now, in every file this server
+writes and in every script expression. Files written by a 16-bit build still
+load: a 65535 in them is read as nothing, under `ACCEPT_LEGACY_NOWHERE` in
+`crates/mud-data/src/types.rs`. Leave that on if you are bringing over an
+existing player base; turn it off in a world that never had one, and 65535
+becomes an ordinary vnum. Scripts that compare against 65535 must change to
+-1; the two stock triggers that did (30 and 201) already have.
+
+**OLC grants no longer reserve zone numbers.** Oasis kept a builder's
+permission in one number and reserved 999, 888 and 666 to mean the social
+editor, the help editor and everything, which only worked because no world
+could hold those zones. The zone and the grants are separate now, and `set`
+takes any mix of them:
+
+```
+set bob olc 30            zone 30
+set bob olc 30 hedit      zone 30 and the help editor
+set bob olc aedit         adds the social editor to whatever bob has
+set bob olc all           every zone and every editor
+set bob olc off           nothing
+```
+
+`stat` and `score` show the result the same way: `OLC[30 aedit hedit]`,
+`OLC[All]`, `OLC[OFF]`. In the player file the zone is the `OlcZ` tag and the
+grants are the `OlcG` tag; the old `Olc` tag is still read, and 999, 888 and
+666 there become the matching grant.
+
+**One thing does not carry over.** The C large-world build writes its house
+control file in a new binary layout with a magic line; this server writes
+that file as versioned ASCII and reads the two 16-bit binary layouts, but not
+the C's 32-bit one. Moving houses from a C large-world server means
+re-creating them with `hcontrol build`.
 
 ---
 

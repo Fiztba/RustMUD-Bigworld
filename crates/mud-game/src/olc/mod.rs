@@ -19,7 +19,6 @@ use mud_data::ids::CharId;
 use mud_data::types::*;
 use mud_world::model::{MobProto, ObjProto, Quest, Room, Shop, Trigger, Zone};
 
-use crate::act::wizstat::{AEDIT_PERMISSION, ALL_PERMISSION, HEDIT_PERMISSION};
 use crate::act::BStr;
 use crate::comm::{self, act, cc, send_to_char, C_NRM, KCYN, KGRN, KNRM, KYEL, TO_ROOM};
 use crate::game::{Game, MudlogKind};
@@ -443,46 +442,40 @@ pub fn cleanup_olc_on_close(g: &mut Game, di: usize) {
 // Zone permissions
 // ---------------------------------------------------------------------------
 
-/// can_edit_zone. `rnum` is a real zone number, or the
-/// AEDIT/HEDIT pseudo-zone.
+/// Whether ch holds a _PERMISSION grant.
+pub fn olc_granted(g: &Game, chid: CharId, grant: i32) -> bool {
+    g.ch(chid).player_specials.as_ref().is_some_and(|ps| ps.olc_grants & grant != 0)
+}
+
+/// can_edit_zone. `rnum` is a real zone number.
 pub fn can_edit_zone(g: &Game, chid: CharId, rnum: i32) -> bool {
     let ch = g.ch(chid);
     if ch.desc.is_none() || ch.is_npc() || rnum == NOWHERE as i32 {
         return false;
     }
-    let pseudo = rnum == HEDIT_PERMISSION || rnum == AEDIT_PERMISSION;
-    if !pseudo
-        && g.world
-            .zones
-            .get(rnum as usize)
-            .is_some_and(|_| crate::act::wizard::zone_flagged(g, rnum as usize, flags::ZONE_NOBUILD))
+    if g.world
+        .zones
+        .get(rnum as usize)
+        .is_some_and(|_| crate::act::wizard::zone_flagged(g, rnum as usize, flags::ZONE_NOBUILD))
     {
         return false;
     }
-    let olc_zone = ch.player_specials.as_ref().map_or(0, |ps| ps.olc_zone);
-    if olc_zone == ALL_PERMISSION {
-        return true;
-    }
-    if olc_zone == HEDIT_PERMISSION && rnum == HEDIT_PERMISSION {
-        return true;
-    }
-    if olc_zone == AEDIT_PERMISSION && rnum == AEDIT_PERMISSION {
+    if olc_granted(g, chid, ALL_PERMISSION) {
         return true;
     }
     if ch.level >= LVL_GRGOD {
         return true;
     }
-    if !pseudo {
-        let builders = g
-            .world
-            .zones
-            .get(rnum as usize)
-            .and_then(|z| z.builders.clone())
-            .unwrap_or_default();
-        if crate::handler::is_name(ch.get_name(), &builders) {
-            return true;
-        }
+    let builders = g
+        .world
+        .zones
+        .get(rnum as usize)
+        .and_then(|z| z.builders.clone())
+        .unwrap_or_default();
+    if crate::handler::is_name(ch.get_name(), &builders) {
+        return true;
     }
+    let olc_zone = ch.player_specials.as_ref().map_or(0, |ps| ps.olc_zone);
     if olc_zone == NOWHERE as i32 {
         return false;
     }
@@ -493,6 +486,42 @@ pub fn can_edit_zone(g: &Game, chid: CharId, rnum: i32) -> bool {
         return true;
     }
     false
+}
+
+/// Whether a builder can use an editor that is not tied to a zone: aedit
+/// and hedit. `grant` is that editor's _PERMISSION bit.
+pub fn can_use_editor(g: &Game, chid: CharId, grant: i32) -> bool {
+    let ch = g.ch(chid);
+    if ch.desc.is_none() || ch.is_npc() {
+        return false;
+    }
+    if olc_granted(g, chid, ALL_PERMISSION) || olc_granted(g, chid, grant) {
+        return true;
+    }
+    ch.level >= LVL_GRGOD
+}
+
+/// ch's OLC permissions in the form stat and set use: "OFF", "All", "30",
+/// "30 aedit hedit" or "hedit".
+pub fn olc_permission_string(g: &Game, chid: CharId) -> BStr {
+    if olc_granted(g, chid, ALL_PERMISSION) {
+        return b"All".to_vec();
+    }
+    let ps = g.ch(chid).player_specials.as_ref();
+    let (zone, grants) = ps.map_or((NOWHERE as i32, 0), |ps| (ps.olc_zone, ps.olc_grants));
+    let mut parts: Vec<String> = Vec::new();
+    if zone != NOWHERE as i32 {
+        parts.push(zone.to_string());
+    }
+    for (i, name) in OLC_GRANT_BITS.iter().enumerate() {
+        if grants & (1 << i) != 0 {
+            parts.push(name.to_string());
+        }
+    }
+    if parts.is_empty() {
+        return b"OFF".to_vec();
+    }
+    parts.join(" ").into_bytes()
 }
 
 pub fn send_cannot_edit(g: &mut Game, chid: CharId, zone: i32) {
@@ -755,11 +784,14 @@ pub fn do_show_save_list(g: &mut Game, chid: CharId, _arg: &[u8], _cmd: usize, _
     }
     send_to_char(g, chid, b"The following files need saving:\r\n");
     for (zone, t) in g.save_list.clone() {
-        if t != crate::db::SL_CFG {
-            let line = format!(" - {} data for zone {}.\r\n", save_type_message(t), zone);
+        if t == crate::db::SL_CFG {
+            send_to_char(g, chid, b" - Game configuration data.\r\n");
+        } else if t == crate::db::SL_ACT || t == crate::db::SL_HLP {
+            let line = format!(" - {} data.\r\n", save_type_message(t));
             send_to_char(g, chid, line.as_bytes());
         } else {
-            send_to_char(g, chid, b" - Game configuration data.\r\n");
+            let line = format!(" - {} data for zone {}.\r\n", save_type_message(t), zone);
+            send_to_char(g, chid, line.as_bytes());
         }
     }
 }

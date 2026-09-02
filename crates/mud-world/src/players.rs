@@ -20,7 +20,10 @@
 use std::io::{self, Write as _};
 use std::path::{Path, PathBuf};
 
-use mud_data::types::{is_nil_vnum, Idx, MAX_NAME_LENGTH, NOWHERE};
+use mud_data::types::{
+    is_nil_vnum, olc_grant_names, parse_olc_grants, Idx, AEDIT_PERMISSION, ALL_PERMISSION,
+    HEDIT_PERMISSION, MAX_NAME_LENGTH, NOWHERE,
+};
 
 use crate::lex::{Reader, asciiflag_conv, atol};
 use crate::write::sprintascii;
@@ -88,7 +91,8 @@ pub struct PlayerFile {
     pub exp: i32,
     pub hitroll: i32,
     pub damroll: i32,
-    pub olc_zone: i32,
+    pub olc_zone: i32,   // OlcZ: (legacy Olc :)
+    pub olc_grants: i32, // OlcG: grant names
     pub page_length: i32,
     pub screen_width: i32,
     pub questpoints: i32,
@@ -187,6 +191,7 @@ impl Default for PlayerFile {
             hitroll: 0,
             damroll: 0,
             olc_zone: NOTHING,
+            olc_grants: 0,
             page_length: 22,
             screen_width: 80,
             questpoints: 0,
@@ -617,7 +622,21 @@ pub fn load_char(lib: &Path, name: &[u8]) -> Option<(PlayerFile, Vec<String>)> {
                 name.truncate(MAX_NAME_LENGTH);
                 pf.name = Some(name);
             }
-            b"Olc " => pf.olc_zone = atoi(&line),
+            b"OlcZ" => {
+                let v = atoi(&line);
+                pf.olc_zone = if v < 0 { NOTHING } else { v };
+            }
+            b"OlcG" => pf.olc_grants = parse_olc_grants(&line),
+            // The Olc tag of player files written before grants were split
+            // from the zone. Those builds reserved three zone numbers, none
+            // of which a world of their size could hold, to mean aedit,
+            // hedit and everything.
+            b"Olc " => match atoi(&line) {
+                999 => pf.olc_grants |= AEDIT_PERMISSION,
+                888 => pf.olc_grants |= HEDIT_PERMISSION,
+                666 => pf.olc_grants |= ALL_PERMISSION,
+                v => pf.olc_zone = if v < 0 { NOTHING } else { v },
+            },
 
             b"Page" => pf.page_length = atoi(&line),
             b"Pass" => pf.passwd = line,
@@ -868,7 +887,12 @@ pub fn save_char(pf: &PlayerFile) -> Vec<u8> {
         put_int(&mut out, b"Drol", pf.damroll.into());
     }
     if pf.olc_zone != NOTHING {
-        put_int(&mut out, b"Olc ", pf.olc_zone.into());
+        put_int(&mut out, b"OlcZ", pf.olc_zone.into());
+    }
+    if pf.olc_grants != 0 {
+        out.extend_from_slice(b"OlcG: ");
+        out.extend_from_slice(olc_grant_names(pf.olc_grants).as_bytes());
+        out.push(b'\n');
     }
     if pf.page_length != 22 {
         put_int(&mut out, b"Page", pf.page_length.into());
@@ -1247,6 +1271,7 @@ mod tests {
             hitroll: 2,
             damroll: 3,
             olc_zone: 30,
+            olc_grants: AEDIT_PERMISSION | HEDIT_PERMISSION,
             page_length: 40,
             screen_width: 120,
             questpoints: 7,
@@ -1292,6 +1317,7 @@ mod tests {
         assert!(contains(&bytes1, b"Aff : d 0 A 0\n"));
         assert!(contains(&bytes1, b"Pref: abcd 0 0 ab\n"));
         assert!(contains(&bytes1, b"Room: -1\n"));
+        assert!(contains(&bytes1, b"OlcZ: 30\nOlcG: aedit hedit \n"));
         assert!(contains(&bytes1, b"Hit : 45/60\n"));
         assert!(contains(&bytes1, b"Str : 18/50\n"));
         assert!(contains(&bytes1, b"Thir: -1\n"));
@@ -1318,6 +1344,7 @@ mod tests {
         assert_eq!(loaded.completed_quests, pf.completed_quests);
         assert_eq!(loaded.triggers, pf.triggers);
         assert_eq!(loaded.load_room, -1);
+        assert_eq!((loaded.olc_zone, loaded.olc_grants), (30, AEDIT_PERMISSION | HEDIT_PERMISSION));
         assert_eq!(loaded.thirst, -1);
 
         let bytes2 = save_char(&loaded);

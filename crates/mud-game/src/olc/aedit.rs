@@ -18,11 +18,11 @@ use mud_data::types::*;
 use crate::act::wizstat::AEDIT_PERMISSION;
 use crate::act::BStr;
 use crate::comm::{act, send_to_char, write_to_desc, TO_ROOM};
-use crate::db::{add_to_save_list, remove_from_save_list, SL_ACT};
+use crate::db::{add_to_save_list, in_save_list, remove_from_save_list, SL_ACT};
 use crate::game::{Game, MudlogKind};
 use crate::handler::{atoi, is_abbrev};
 use crate::interpreter::{delete_doubledollar, one_argument};
-use crate::olc::{can_edit_zone, get_char_colors, OlcData, CLEANUP_ALL, CLEANUP_STRUCTS};
+use crate::olc::{can_use_editor, get_char_colors, OlcData, CLEANUP_ALL, CLEANUP_STRUCTS};
 use crate::social::Social;
 
 /// AEDIT connectedness.
@@ -91,7 +91,7 @@ pub fn do_oasis_aedit(g: &mut Game, chid: CharId, argument: &[u8], _cmd: usize, 
         send_to_char(g, chid, b"Socials cannot be edited at the moment.\r\n");
         return;
     }
-    if !can_edit_zone(g, chid, AEDIT_PERMISSION) {
+    if !can_use_editor(g, chid, AEDIT_PERMISSION) {
         send_to_char(g, chid, b"You don't have access to editing socials.\r\n");
         return;
     }
@@ -230,7 +230,7 @@ fn aedit_save_internally(g: &mut Game, olc: &mut OlcData) -> bool {
         g.socials[znum].act_nr = act_nr;
     }
     crate::interpreter::create_command_list(g);
-    add_to_save_list(g, AEDIT_PERMISSION as Idx, SL_ACT);
+    add_to_save_list(g, NOWHERE, SL_ACT);
     aedit_save_to_disk(g)
 }
 
@@ -282,7 +282,9 @@ pub fn aedit_save_to_disk(g: &mut Game) -> bool {
         g.log(format!("SYSERR: Can't open socials file '{}'", path.display()));
         return false;
     }
-    remove_from_save_list(g, AEDIT_PERMISSION as Idx, SL_ACT);
+    if in_save_list(g, NOWHERE, SL_ACT) {
+        remove_from_save_list(g, NOWHERE, SL_ACT);
+    }
     true
 }
 
@@ -644,7 +646,7 @@ pub fn aedit_parse(
                         // numbers cached off it. Both are what a save does
                         // after any other change.
                         crate::interpreter::create_command_list(g);
-                        add_to_save_list(g, AEDIT_PERMISSION as Idx, SL_ACT);
+                        add_to_save_list(g, NOWHERE, SL_ACT);
                         let saved = aedit_save_to_disk(g);
                         if let Some(chid) = g.descriptors.get(di).and_then(|d| d.character) {
                             let name = String::from_utf8_lossy(g.ch(chid).get_name()).into_owned();

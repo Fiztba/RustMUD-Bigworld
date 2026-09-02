@@ -816,6 +816,7 @@ You feel slightly different.",
         }
         let ps = g.ch_mut(victim).ps_mut();
         ps.olc_zone = NOWHERE as i32;
+        ps.olc_grants = 0;
         ps.conditions = [-1, -1, -1];
     }
 
@@ -1379,11 +1380,15 @@ pub fn do_zreset(g: &mut Game, chid: CharId, argument: &[u8], _cmd: usize, _subc
         );
     } else {
         let olc = g.ch(chid).player_specials.as_ref().map_or(0, |ps| ps.olc_zone);
-        send_to_char(
-            g,
-            chid,
-            format!("You do not have permission to reset this zone. Try {}.\r\n", olc).as_bytes(),
-        );
+        if olc != NOWHERE as i32 {
+            send_to_char(
+                g,
+                chid,
+                format!("You do not have permission to reset this zone. Try {}.\r\n", olc).as_bytes(),
+            );
+        } else {
+            send_to_char(g, chid, b"You do not have permission to reset this zone.\r\n");
+        }
     }
 }
 
@@ -3589,7 +3594,7 @@ fn set_zone_flag(g: &mut Game, zn: usize, bit: usize, on: bool) {
 
 /// The zlock/zunlock builder gate.
 fn zone_builder_access(g: &Game, chid: CharId, zn: usize, znvnum: i32) -> bool {
-    if g.ch(chid).level >= LVL_GRGOD {
+    if g.ch(chid).level >= LVL_GRGOD || crate::olc::olc_granted(g, chid, ALL_PERMISSION) {
         return true;
     }
     let name = g.ch(chid).get_name().to_vec();

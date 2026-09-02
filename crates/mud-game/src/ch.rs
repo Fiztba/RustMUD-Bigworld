@@ -89,7 +89,10 @@ pub struct PlayerSpecials {
     pub conditions: [i16; 3],
     /// Practice sessions ("spells_to_learn").
     pub practices: i32,
+    /// The zone this builder may edit, or NOWHERE.
     pub olc_zone: i32,
+    /// The _PERMISSION bits: editors granted outside any zone.
+    pub olc_grants: i32,
     /// GET_BUILDWALK_SECTOR: the sector new buildwalk
     /// rooms get. Not persisted to the pfile.
     pub buildwalk_sector: i32,
@@ -127,6 +130,7 @@ impl Default for PlayerSpecials {
             // A fresh char's olc_zone starts at 0; the NOWHERE
             // default is a pfile-load default, applied there.
             olc_zone: 0,
+            olc_grants: 0,
             buildwalk_sector: 0,
             page_length: 22,
             screen_width: 80,

@@ -161,6 +161,7 @@ fn char_to_playerfile(g: &Game, chid: CharId, affects: &[Affect]) -> PlayerFile 
         hitroll: ch.points.hitroll as i32,
         damroll: ch.points.damroll as i32,
         olc_zone: ps.olc_zone,
+        olc_grants: ps.olc_grants,
         page_length: ps.page_length,
         screen_width: ps.screen_width,
         questpoints: ps.questpoints,
@@ -317,6 +318,7 @@ pub fn load_char_into(g: &mut Game, chid: CharId, name: &[u8]) -> Option<usize> 
             ps.conditions[THIRST] = pf.thirst as i16;
             ps.conditions[DRUNK] = pf.drunk as i16;
             ps.olc_zone = pf.olc_zone;
+            ps.olc_grants = pf.olc_grants;
             ps.page_length = pf.page_length;
             ps.screen_width = pf.screen_width;
             ps.questpoints = pf.questpoints;

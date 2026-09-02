@@ -555,18 +555,14 @@ pub fn add_to_save_list(g: &mut Game, zone: Idx, type_: i32) -> bool {
     if type_ == SL_CFG {
         return false;
     }
-    let rznum = g.world.real_zone(zone);
-    if rznum.is_none() {
-        let aedit = crate::act::wizstat::AEDIT_PERMISSION;
-        let hedit = crate::act::wizstat::HEDIT_PERMISSION;
-        if zone as i32 != aedit && zone as i32 != hedit {
-            let top = g.world.zones.len().saturating_sub(1);
-            g.log(format!(
-                "SYSERR: add_to_save_list: Invalid zone number passed. ({} => {}, 0-{})",
-                zone, NOWHERE, top
-            ));
-            return false;
-        }
+    // Socials and help files belong to no zone and are keyed on NOWHERE.
+    if type_ != SL_ACT && type_ != SL_HLP && g.world.real_zone(zone).is_none() {
+        let top = g.world.zones.len().saturating_sub(1);
+        g.log(format!(
+            "SYSERR: add_to_save_list: Invalid zone number passed. ({} => {}, 0-{})",
+            zone as i32, NOWHERE as i32, top
+        ));
+        return false;
     }
     if g.save_list.iter().any(|&(z, t)| z == zone && t == type_) {
         return false;

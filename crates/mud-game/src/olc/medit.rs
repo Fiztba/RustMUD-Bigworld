@@ -99,8 +99,7 @@ pub fn do_oasis_medit(g: &mut Game, chid: CharId, argument: &[u8], _cmd: usize, 
             number = atoi(&buf2);
         } else {
             let olc_zone = g.ch(chid).player_specials.as_ref().map_or(0, |ps| ps.olc_zone);
-            // Note: medit tests `> 0` where redit tests `!= NOWHERE`.
-            if olc_zone > 0 {
+            if olc_zone != NOWHERE as i32 {
                 number = match g.world.real_zone(olc_zone as Idx) {
                     None => NOWHERE as i32,
                     // The zone below is resolved with real_zone, so

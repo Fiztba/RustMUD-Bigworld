@@ -1192,7 +1192,7 @@ pub fn do_score(g: &mut Game, chid: CharId, _arg: &[u8], _cmd: usize, _subcmd: i
         let name = g.ch(chid).name.clone().unwrap_or_default();
         let poofin = g.ch(chid).ps().poofin.clone();
         let poofout = g.ch(chid).ps().poofout.clone();
-        let olc_zone = g.ch(chid).ps().olc_zone;
+        let olc = crate::olc::olc_permission_string(g, chid);
         let mut imm: BStr = Vec::new();
         imm.extend_from_slice(&qyel);
         imm.extend_from_slice(b"POOFIN:  ");
@@ -1210,9 +1210,9 @@ pub fn do_score(g: &mut Game, chid: CharId, _arg: &[u8], _cmd: usize, _subcmd: i
         imm.extend_from_slice(poofout.as_deref().unwrap_or(b"disappears in a puff of smoke."));
         imm.extend_from_slice(&qnrm);
         imm.extend_from_slice(b"\r\n");
-        imm.extend_from_slice(b"Your current zone: ");
+        imm.extend_from_slice(b"Your OLC permission: ");
         imm.extend_from_slice(&qcyn);
-        imm.extend_from_slice(format!("{}", olc_zone).as_bytes());
+        imm.extend_from_slice(&olc);
         imm.extend_from_slice(&qnrm);
         imm.extend_from_slice(b"\r\n");
         send_to_char(g, chid, &imm);

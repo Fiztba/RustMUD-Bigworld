@@ -19,10 +19,7 @@ use crate::interpreter::{half_chop, is_number, one_argument};
 use crate::quest::sprintbit;
 use crate::spec::{MobSpec, ObjSpec, RoomSpec};
 
-/// GET_OLC_ZONE sentinels.
-pub const AEDIT_PERMISSION: i32 = 999;
-pub const HEDIT_PERMISSION: i32 = 888;
-pub const ALL_PERMISSION: i32 = 666;
+pub use mud_data::types::{AEDIT_PERMISSION, ALL_PERMISSION, HEDIT_PERMISSION};
 
 pub fn sprinttype(type_: i32, names: &[&str]) -> BStr {
     match usize::try_from(type_).ok().and_then(|i| names.get(i)) {
@@ -808,14 +805,7 @@ pub fn do_stat_character(g: &mut Game, chid: CharId, k: CharId) {
             .as_bytes(),
         );
         if g.ch(k).level >= LVL_BUILDER {
-            let olc = g.ch(k).ps().olc_zone;
-            let label: BStr = match olc {
-                AEDIT_PERMISSION => b"Aedit".to_vec(),
-                HEDIT_PERMISSION => b"Hedit".to_vec(),
-                ALL_PERMISSION => b"All".to_vec(),
-                x if x == NOWHERE as i32 => b"OFF".to_vec(),
-                x => x.to_string().into_bytes(),
-            };
+            let label = crate::olc::olc_permission_string(g, k);
             out.extend_from_slice(b", OLC[");
             out.extend_from_slice(&cyn);
             out.extend_from_slice(&label);

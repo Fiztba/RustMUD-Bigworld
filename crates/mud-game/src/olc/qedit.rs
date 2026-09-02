@@ -127,7 +127,7 @@ pub fn do_oasis_qedit(g: &mut Game, chid: CharId, argument: &[u8], _cmd: usize, 
             // The argument this path stands in for is a zone
             // number, not a vnum, so that is what it produces.
             let olc_zone = g.ch(chid).player_specials.as_ref().map_or(0, |ps| ps.olc_zone);
-            if olc_zone > 0 {
+            if olc_zone != NOWHERE as i32 {
                 number = match g.world.real_zone(olc_zone as Idx) {
                     None => NOWHERE as i32,
                     Some(_) => olc_zone,

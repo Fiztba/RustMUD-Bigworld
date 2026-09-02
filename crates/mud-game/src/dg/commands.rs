@@ -11,44 +11,15 @@ use super::{
 };
 use crate::comm::send_to_char;
 use crate::game::Game;
-use crate::handler::{is_abbrev, isname, eq_ci};
+use crate::handler::{is_abbrev, eq_ci};
 use crate::interpreter::{one_argument, two_arguments};
 
 pub type BStr = Vec<u8>;
 
+/// can_edit_zone over an optional real zone: the form the script commands
+/// and the wizard commands use.
 pub fn can_edit_zone(g: &Game, chid: CharId, rnum: Option<usize>) -> bool {
-    const ALL_PERMISSION: i32 = 666;
-    const HEDIT_PERMISSION: i32 = 888;
-    const AEDIT_PERMISSION: i32 = 999;
-    let ch = g.ch(chid);
-    let Some(rnum) = rnum else { return false };
-    if ch.desc.is_none() || ch.is_npc() {
-        return false;
-    }
-    let zflag_nobuild = g.world.zones[rnum].zone_flags[0] & (1 << 4) != 0;
-    if zflag_nobuild {
-        return false;
-    }
-    let olc_zone = ch.player_specials.as_ref().map_or(0, |ps| ps.olc_zone);
-    if olc_zone == ALL_PERMISSION {
-        return true;
-    }
-    let _ = (HEDIT_PERMISSION, AEDIT_PERMISSION);
-    if ch.level >= LVL_GRGOD {
-        return true;
-    }
-    if let Some(builders) = g.world.zones[rnum].builders.as_deref() {
-        if isname(ch.get_name(), builders) {
-            return true;
-        }
-    }
-    if olc_zone == NOWHERE as i32 {
-        return false;
-    }
-    if (ch.level as i32) < LVL_BUILDER as i32 {
-        return false;
-    }
-    g.world.zones.get(rnum).is_some_and(|z| z.number as i32 == olc_zone)
+    rnum.is_some_and(|r| crate::olc::can_edit_zone(g, chid, r as i32))
 }
 
 fn zone_of_room(g: &Game, room: RoomRnum) -> Option<usize> {

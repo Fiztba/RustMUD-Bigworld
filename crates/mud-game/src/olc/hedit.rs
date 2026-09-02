@@ -17,12 +17,12 @@ use mud_data::types::*;
 use crate::act::wizstat::HEDIT_PERMISSION;
 use crate::act::BStr;
 use crate::comm::{act, send_editor_help, send_to_char, string_write, write_to_desc, TO_ROOM};
-use crate::db::{add_to_save_list, remove_from_save_list, SL_HLP};
+use crate::db::{add_to_save_list, in_save_list, remove_from_save_list, SL_HLP};
 use crate::game::{Game, MudlogKind};
 use crate::handler::atoi;
 use crate::interpreter::one_argument;
 use crate::olc::{
-    can_edit_zone, clear_screen, get_char_colors, str_udup, OlcData, StrTarget, CLEANUP_ALL,
+    can_use_editor, clear_screen, get_char_colors, str_udup, OlcData, StrTarget, CLEANUP_ALL,
     CLEANUP_STRUCTS,
 };
 use crate::text::HelpEntry;
@@ -47,7 +47,7 @@ pub fn do_oasis_hedit(g: &mut Game, chid: CharId, argument: &[u8], _cmd: usize, 
     if g.ch(chid).is_npc() || g.descriptors.get(di).map(|d| d.state) != Some(ConState::Playing) {
         return;
     }
-    if !can_edit_zone(g, chid, HEDIT_PERMISSION) {
+    if !can_use_editor(g, chid, HEDIT_PERMISSION) {
         send_to_char(g, chid, b"You don't have access to editing help files.\r\n");
         return;
     }
@@ -77,7 +77,7 @@ pub fn do_oasis_hedit(g: &mut Game, chid: CharId, argument: &[u8], _cmd: usize, 
         // nothing and logged "remove_from_save_list: Saved item not found."
         // on every `hedit save`. Pairing it changes nothing about what
         // reaches disk.
-        add_to_save_list(g, HEDIT_PERMISSION as Idx, SL_HLP);
+        add_to_save_list(g, NOWHERE, SL_HLP);
         if hedit_save_to_disk(g) {
             send_to_char(g, chid, b"Saving help files.\r\n");
         } else {
@@ -397,7 +397,7 @@ fn hedit_save_internally(g: &mut Game, olc: &mut OlcData) -> Saved {
             }
         }
     }
-    add_to_save_list(g, HEDIT_PERMISSION as Idx, SL_HLP);
+    add_to_save_list(g, NOWHERE, SL_HLP);
     if hedit_save_to_disk(g) {
         Saved::Ok
     } else {
@@ -431,7 +431,9 @@ pub fn hedit_save_to_disk(g: &mut Game) -> bool {
         g.log("SYSERR: Could not write help index file".to_string());
         return false;
     }
-    remove_from_save_list(g, HEDIT_PERMISSION as Idx, SL_HLP);
+    if in_save_list(g, NOWHERE, SL_HLP) {
+        remove_from_save_list(g, NOWHERE, SL_HLP);
+    }
 
     // Reboot the help files.
     let mut log = Vec::new();
@@ -646,7 +648,7 @@ pub fn hedit_parse(
                         // adds it immediately before saving for exactly this
                         // reason. Without the add, every deletion logs
                         // "remove_from_save_list: Saved item not found."
-                        add_to_save_list(g, HEDIT_PERMISSION as Idx, SL_HLP);
+                        add_to_save_list(g, NOWHERE, SL_HLP);
                         if let Some(chid) = g.descriptors.get(di).and_then(|d| d.character) {
                             let name = String::from_utf8_lossy(g.ch(chid).get_name()).into_owned();
                             let kw = String::from_utf8_lossy(

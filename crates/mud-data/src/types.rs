@@ -52,6 +52,47 @@ pub const NOTHING: Idx = Idx::MAX;
 pub const NOBODY: Idx = Idx::MAX;
 pub const NOFLAG: Idx = Idx::MAX;
 
+// OLC grants. A builder's zone is a zone vnum in olc_zone; the editors that
+// are not tied to any zone are granted separately, as these bits in
+// olc_grants, so no zone number has to be reserved to stand for them. They
+// used to be zone numbers (999, 888, 666) above anything a 16-bit world could
+// hold; a wider world can hold them, hence the split. The names are the ones
+// Oasis has always used.
+pub const AEDIT_PERMISSION: i32 = 1 << 0; // may edit socials
+pub const HEDIT_PERMISSION: i32 = 1 << 1; // may edit help files
+pub const ALL_PERMISSION: i32 = 1 << 2; // may edit every zone and use every editor
+pub const NUM_OLC_GRANTS: usize = 3;
+/// The grant names, in bit order; what set, stat and the player file use.
+pub const OLC_GRANT_BITS: [&str; NUM_OLC_GRANTS] = ["aedit", "hedit", "all"];
+
+/// The grants as sprintbit() spells them: "aedit hedit " (trailing space),
+/// or "NOBITS " for none. This is the OlcG line of the player file.
+pub fn olc_grant_names(grants: i32) -> String {
+    let mut out = String::new();
+    for (i, name) in OLC_GRANT_BITS.iter().enumerate() {
+        if grants & (1 << i) != 0 {
+            out.push_str(name);
+            out.push(' ');
+        }
+    }
+    if out.is_empty() {
+        out.push_str("NOBITS ");
+    }
+    out
+}
+
+/// The inverse: grant names, whitespace-separated, to bits. Unknown words
+/// are ignored, as search_block() ignores them.
+pub fn parse_olc_grants(line: &[u8]) -> i32 {
+    let mut grants = 0;
+    for word in line.split(|b| b.is_ascii_whitespace()).filter(|w| !w.is_empty()) {
+        if let Some(i) = OLC_GRANT_BITS.iter().position(|n| n.as_bytes().eq_ignore_ascii_case(word)) {
+            grants |= 1 << i;
+        }
+    }
+    grants
+}
+
 // Directions
 pub const NORTH: usize = 0;
 pub const EAST: usize = 1;

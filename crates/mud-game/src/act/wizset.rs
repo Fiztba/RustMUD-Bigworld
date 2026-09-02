@@ -365,28 +365,45 @@ fn perform_set(g: &mut Game, chid: CharId, vict: CharId, mode: usize, val_arg: &
         }
         36 => set_or_remove(g, vict, true, flags::PLR_NOWIZLIST, on, off),
         37 => {
-            let zone = if is_abbrev(val_arg, b"socials")
-                || is_abbrev(val_arg, b"actions")
-                || is_abbrev(val_arg, b"aedit")
-            {
-                AEDIT_PERMISSION
-            } else if is_abbrev(val_arg, b"hedit") || is_abbrev(val_arg, b"help") {
-                HEDIT_PERMISSION
-            } else if val_arg.first() == Some(&b'*') || is_abbrev(val_arg, b"all") {
-                ALL_PERMISSION
-            } else if is_abbrev(val_arg, b"off") {
-                NOWHERE as i32
-            } else if !is_number(val_arg) {
-                send_to_char(
-                    g,
-                    chid,
-                    b"Value must be a zone number, 'aedit', 'hedit', 'off' or 'all'.\r\n",
-                );
-                return false;
-            } else {
-                atoi(val_arg)
+            // Any mix of a zone number and grant names, applied in order: a
+            // number sets the zone, a grant name adds that grant, 'off'
+            // clears everything. "set x olc 30 hedit" gives zone 30 plus
+            // hedit.
+            let (mut zone, mut grants) = {
+                let ps = g.ch(vict).ps();
+                (ps.olc_zone, ps.olc_grants)
             };
-            g.ch_mut(vict).ps_mut().olc_zone = zone;
+            let (mut word, mut rest) = one_argument(val_arg);
+            if word.is_empty() {
+                send_to_char(g, chid, b"Value must be a zone number, 'aedit', 'hedit', 'all' or 'off'.\r\n");
+                return false;
+            }
+            while !word.is_empty() {
+                if is_abbrev(&word, b"off") {
+                    zone = NOWHERE as i32;
+                    grants = 0;
+                } else if is_abbrev(&word, b"socials") || is_abbrev(&word, b"actions") || is_abbrev(&word, b"aedit") {
+                    grants |= AEDIT_PERMISSION;
+                } else if is_abbrev(&word, b"hedit") || is_abbrev(&word, b"help") {
+                    grants |= HEDIT_PERMISSION;
+                } else if word.first() == Some(&b'*') || is_abbrev(&word, b"all") {
+                    grants |= ALL_PERMISSION;
+                } else if is_number(&word) {
+                    zone = crate::olc::atoidx(&word);
+                } else {
+                    send_to_char(g, chid, b"Value must be a zone number, 'aedit', 'hedit', 'all' or 'off'.\r\n");
+                    return false;
+                }
+                (word, rest) = one_argument(rest);
+            }
+            {
+                let ps = g.ch_mut(vict).ps_mut();
+                ps.olc_zone = zone;
+                ps.olc_grants = grants;
+            }
+            let perm = crate::olc::olc_permission_string(g, vict);
+            let msg = format!("OLC for {} is now: {}.\r\n", vname, String::from_utf8_lossy(&perm));
+            send_to_char(g, chid, msg.as_bytes());
         }
         38 => {
             if g.ch(vict).level >= LVL_GRGOD {
